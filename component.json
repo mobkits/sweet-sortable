@@ -13,6 +13,9 @@
     "component/each": "*",
     "yields/indexof": "*"
   },
+  "development": {
+    "component/dom": "*"
+  },
   "license": "MIT",
   "main": "index.js",
   "scripts": ["index.js"]

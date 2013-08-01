@@ -62,12 +62,14 @@
   <body>
 
     <h2>List</h2>
-    <ul class='languages'>
+    <ul id="languages" class='languages'>
       <li>Javascript</li>
       <li>Lua</li>
       <li>Google Go</li>
       <li>Julia</li>
     </ul>
+    <button id="add">add</button>
+    <button id="remove">remove</button>
 
     <h2>Disabled items</h2>
     <ul class='languages'>
@@ -108,7 +110,13 @@
         sortable.ignore('[disabled]');
         sortable.bind('li');
       });
-
+      var dom = require('dom');
+      dom('#add').on('click', function(){
+          dom('<li>Python</li>').appendTo('#languages');
+      });
+      dom('#remove').on('click', function(){
+          dom('#languages li').last().remove();
+      });
     </script>
   </body>
 </html>
