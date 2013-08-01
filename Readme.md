@@ -1,11 +1,20 @@
 
 # sortable
 
-  UI Sortable component, see the [demo](http://yields.github.io/sortable/index.html).
+  UI Sortable component, see the [demo](http://chemzqm.github.io/sortable/index.html).
+
+  Original repo [yields/sortable](https://github.com/yields/sortable)
+
+  The changes of this fork is the D&D events is automatically bind when `mousedown` event is triggered
+  in the element, and removed when `mouseup` triggered, so no worry about the element added or removed on
+  the fly, you can even inintialize sortable with an empty element.
+
+  However, the changes breaks the work of method `connect`, so pay attation, the `connect` method is not supported.
+
 
 ## Installation
 
-    $ component install yields/sortable
+    $ component install chemzqm/sortable
 
 ## API
 
@@ -27,31 +36,13 @@ Ignore items matching the given `selector`.
 
 Set the handle to `selector`.
 
-#### .bind()
+#### .bind(selector)
 
-Bind internal events.
+Bind internal events with selector.
 
 #### .unbind()
 
 Unbind internal events.
-
-#### .connect(sortable)
-
-Connect with `Sortable` instance, the method returns the given `Sortable`.
-
-```js
-one = new Sortable(query('.one'));
-two = new Sortable(query('.two'));
-
-// one <> two
-one
-.connect(two)
-.connect(one);
-
-// one > two
-one.connect(two);
-
-```
 
 ## License
 
