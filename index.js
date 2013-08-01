@@ -90,6 +90,7 @@ Sortable.prototype.onmouseup = function(e) {
 
 Sortable.prototype.remove = function() {
   this.events.unbind();
+  this.off();
 }
 
 
