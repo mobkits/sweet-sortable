@@ -40,9 +40,9 @@ Set the handle to `selector`.
 
 Bind internal events with selector.
 
-#### .unbind()
+### .remove()
 
-Unbind internal events.
+Unbind all the events.
 
 ## License
 
