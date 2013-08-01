@@ -4,6 +4,9 @@
   "dependencies": {
     "chemzqm/sortable": "*"
   },
+  "development": {
+    "component/dom": "*"
+  },
   "license": "MIT",
   "main": "index.js",
   "scripts": ["index.js"]
