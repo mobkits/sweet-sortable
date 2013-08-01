@@ -1,6 +1,6 @@
 
 build: components
-	@component build
+	@component build --dev
 
 components: component.json
 	@component install

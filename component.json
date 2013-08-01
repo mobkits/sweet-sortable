@@ -2,12 +2,16 @@
   "name": "sortable-example",
   "version": "0.0.1",
   "dependencies": {
-    "chemzqm/sortable": "*"
+    "chemzqm/sortable": "*",
+    "components/dom": "*",
+    "component/dom": "*"
   },
   "development": {
     "component/dom": "*"
   },
   "license": "MIT",
   "main": "index.js",
-  "scripts": ["index.js"]
+  "scripts": [
+    "index.js"
+  ]
 }
