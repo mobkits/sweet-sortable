@@ -96,18 +96,6 @@
       <li>7</li>
     </ul>
 
-    <h2>Connected</h2>
-    <ul class='one'>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-    </ul>
-    <ul>
-      <li>4</li>
-      <li>5</li>
-      <li>6</li>
-    </ul>
-
     <script>
       var Sortable = require('sortable');
       var els = document.querySelectorAll('.numbers, .languages, .handle');
@@ -118,17 +106,8 @@
         var sortable = new Sortable(el);
         if ('handle' == el.className) sortable.handle('span');
         sortable.ignore('[disabled]');
-        sortable.bind();
+        sortable.bind('li');
       });
-
-      // connected
-      var one = new Sortable(ul);
-      var two = new Sortable(ul.nextElementSibling);
-
-      // two <> one
-      two.bind()
-      .connect(one.bind())
-      .connect(two);
 
     </script>
   </body>

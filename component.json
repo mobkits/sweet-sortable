@@ -2,6 +2,9 @@
   "name": "sortable-example",
   "version": "0.0.1",
   "dependencies": {
-    "yields/sortable": "*"
-  }
+    "chemzqm/sortable": "*"
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": ["index.js"]
 }
