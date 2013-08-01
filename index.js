@@ -1,4 +1,3 @@
-
 /**
  * dependencies
  */
@@ -26,7 +25,6 @@ function Sortable(el){
   if (!(this instanceof Sortable)) return new Sortable(el);
   if (!el) throw new TypeError('sortable(): expects an element');
   this.events = events(el, this);
-  this.els = el.children;
   this.el = el;
 }
 
@@ -47,7 +45,7 @@ emitter(Sortable.prototype);
 Sortable.prototype.ignore = function(selector){
   this.ignored = selector;
   return this;
-};
+}
 
 /**
  * Set handle to `selector`.
@@ -60,81 +58,40 @@ Sortable.prototype.ignore = function(selector){
 Sortable.prototype.handle = function(selector){
   this._handle = selector;
   return this;
-};
+}
 
-/**
- * Bind internal events.
- *
- * @return {Sortable}
- * @api public
- */
-
-Sortable.prototype.bind = function(e){
+Sortable.prototype.bind = function (selector){
+  this.selector = selector || '';
   this.events.bind('mousedown');
+  this.events.bind('mouseup');
+}
+
+Sortable.prototype.onmousedown = function(e) {
+  if (this._handle) {
+    this.match = matches(e.target, this._handle);
+  }
+  this.reset();
+  this.draggable = up(e.target, this.selector, this.el);
+  if (!this.draggable) return;
+  this.draggable.draggable = true;
   this.events.bind('dragstart');
   this.events.bind('dragover');
   this.events.bind('dragenter');
   this.events.bind('dragend');
   this.events.bind('drop');
-  each(this.els, 'draggable = true');
-  this.clone = this.els[0].cloneNode(false);
+  this.clone = this.draggable.cloneNode(false);
   classes(this.clone).add('sortable-placeholder');
   return this;
-};
+}
 
-/**
- * Unbind internal events.
- *
- * @return {Sortable}
- * @api public
- */
+Sortable.prototype.onmouseup = function(e) {
+  this.reset();
+}
 
-Sortable.prototype.unbind = function(e){
-  each(this.els, 'draggable = false');
+Sortable.prototype.remove = function() {
   this.events.unbind();
-  return this;
-};
+}
 
-/**
- * Connect the given `sortable`.
- *
- * once connected you can drag elements from
- * the given sortable to this sortable.
- *
- * Example:
- *
- *      one <> two
- *
- *      one
- *      .connect(two)
- *      .connect(one);
- *
- *      two > one
- *
- *      one
- *      .connect(two)
- *
- *      one > two > three
- *
- *      three
- *      .connect(two)
- *      .connect(one);
- *
- * @param {Sortable} sortable
- * @return {Sortable} the given sortable.
- * @api public
- */
-
-Sortable.prototype.connect = function(sortable){
-  var self = this;
-  this.on('drop', this.reset.bind(sortable));
-  return sortable.on('start', function(){
-    self.draggable = sortable.draggable;
-    self.clone = sortable.clone;
-    self.display = sortable.display;
-    self.i = sortable.i;
-  });
-};
 
 /**
  * on-dragstart
@@ -146,14 +103,14 @@ Sortable.prototype.connect = function(sortable){
 Sortable.prototype.ondragstart = function(e){
   if (this.ignored && matches(e.target, this.ignored)) return e.preventDefault();
   if (this._handle && !this.match) return e.preventDefault();
-  this.draggable = e.target;
-  this.display = window.getComputedStyle(e.target).display;
-  this.i = indexof(e.target);
+  var target = this.draggable;
+  this.display = window.getComputedStyle(target).display;
+  this.i = indexof(target);
   e.dataTransfer.setData('text', ' ');
   e.dataTransfer.effectAllowed = 'move';
-  classes(e.target).add('dragging');
+  classes(target).add('dragging');
   this.emit('start', e);
-};
+}
 
 /**
  * on-dragover
@@ -183,19 +140,8 @@ Sortable.prototype.ondragover = function(e){
   if (ci < i) next = el.nextElementSibling;
   if (this.ignored && matches(el, this.ignored)) return;
   this.el.insertBefore(this.clone, next);
-};
+}
 
-/**
- * on-mousedown.
- *
- * @param {Event} e
- * @api private
- */
-
-Sortable.prototype.onmousedown = function(e){
-  if (!this._handle) return;
-  this.match = matches(e.target, this._handle);
-};
 
 /**
  * on-dragend
@@ -211,7 +157,7 @@ Sortable.prototype.ondragend = function(e){
   classes(this.draggable).remove('dragging');
   if (this.i == indexof(this.draggable)) return;
   this.emit('update');
-};
+}
 
 /**
  * on-drop
@@ -226,7 +172,7 @@ Sortable.prototype.ondrop = function(e){
   this.ondragend(e);
   this.emit('drop', e);
   this.reset();
-};
+}
 
 /**
  * Reset sortable.
@@ -237,10 +183,19 @@ Sortable.prototype.ondrop = function(e){
  */
 
 Sortable.prototype.reset = function(){
-  this.draggable = null;
+  if (this.draggable) {
+    this.draggable.draggable = false;
+    this.draggable = null;
+  }
   this.display = null;
   this.i = null;
-};
+
+  this.events.unbind('dragstart');
+  this.events.unbind('dragover');
+  this.events.unbind('dragenter');
+  this.events.unbind('dragend');
+  this.events.unbind('drop');
+}
 
 /**
  * Remove the given `el`.
@@ -250,7 +205,16 @@ Sortable.prototype.reset = function(){
  * @api private
  */
 
-function remove(el){
+function remove (el) {
   if (!el.parentNode) return;
   el.parentNode.removeChild(el);
+}
+
+function up (node, selector, container) {
+  do {
+    if (matches(node, selector)) {
+      return node;
+    }
+    node = node.parentNode;
+  } while (node !== container);
 }
