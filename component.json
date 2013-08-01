@@ -1,9 +1,9 @@
 {
   "name": "sortable",
-  "repo": "yields/sortable",
+  "repo": "chemzqm/sortable",
   "description": "UI Sortable component.",
-  "demo": "http://yields.github.io/sortable/index.html",
-  "version": "0.3.0",
+  "demo": "http://chemzqm.github.io/sortable/index.html",
+  "version": "0.3.1",
   "keywords": ["draggable", "sortable"],
   "dependencies": {
     "component/matches-selector": "*",
