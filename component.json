@@ -3,10 +3,6 @@
   "version": "0.0.1",
   "dependencies": {
     "chemzqm/sortable": "*",
-    "components/dom": "*",
-    "component/dom": "*"
-  },
-  "development": {
     "component/dom": "*"
   },
   "license": "MIT",
