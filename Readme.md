@@ -16,7 +16,7 @@
 ## Example
 
 ``` html
-<ul class='languages'>
+<ul id='languages'>
   <li>Javascript</li>
   <li>Lua</li>
   <li disabled>Google Go</li>
@@ -26,6 +26,7 @@
 
 ``` js
 var Sortable = require('sortable');
+var el = document.getElementById('languages');
 var sortable = new Sortable(el);
 sortable.ignore('[disabled]');
 sortable.bind('li');
