@@ -208,6 +208,35 @@ Sortable.prototype.reset = function(){
   this.events.unbind('drop');
 }
 
+/**
+* Connect the given `sortable`.
+*
+* once connected you can drag elements from
+* the given sortable to this sortable.
+*
+* Example:
+*
+*      one <> two
+*
+*      one
+*      .connect(two)
+*      .connect(one);
+*
+*      two > one
+*
+*      one
+*      .connect(two)
+*
+*      one > two > three
+*
+*      three
+*      .connect(two)
+*      .connect(one);
+*
+* @param {Sortable} sortable
+* @return {Sortable} the given sortable.
+* @api public
+*/
 Sortable.prototype.connect = function(sortable) {
   var self = this;
   this.on('update', function(el) {
