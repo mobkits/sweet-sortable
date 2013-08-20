@@ -7,6 +7,7 @@
   "keywords": ["draggable", "sortable"],
   "dependencies": {
     "component/matches-selector": "*",
+    "component/dom": "*",
     "component/emitter": "*",
     "component/events": "*",
     "component/classes": "*",
