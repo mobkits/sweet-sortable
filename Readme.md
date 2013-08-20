@@ -59,7 +59,8 @@ Set the handle to `selector`.
 
 Connect to another sortable, the element of another sortable could be dragged to this sortable element.
 
-### .remove()
+
+#### .remove()
 
 Unbind all the events.
 
