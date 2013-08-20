@@ -160,8 +160,8 @@ Sortable.prototype.ondragend = function(e){
   if (this.clone) remove(this.clone);
   this.draggable.style.display = this.display;
   classes(this.draggable).remove('dragging');
-  if (this.i == indexof(this.draggable)) return;
-  this.emit('update');
+  if (this.connect !== true && this.i == indexof(this.draggable)) return;
+  this.emit('update', this.draggable);
 }
 
 /**
@@ -194,6 +194,7 @@ Sortable.prototype.reset = function(){
     this.draggable.draggable = false;
     this.draggable = null;
   }
+  this.emit('reset');
   this.display = null;
   this.i = null;
 
@@ -206,8 +207,17 @@ Sortable.prototype.reset = function(){
 
 Sortable.prototype.connect = function(sortable) {
   var self = this;
-  this.on('drop', this.reset.bind(sortable));
+  var onupdate = function(el) {
+    sortable.emit('update', el);
+  }
+  this.on('reset', function () {
+    self.connect = false;
+    self.reset.bind(sortable);
+    self.off('update', onupdate);
+  });
   return sortable.on('start', function(){
+    self.connect = true;
+    self.on('update', onupdate);
     self.bindEvents();
     self.draggable = sortable.draggable;
     self.clone = sortable.clone;

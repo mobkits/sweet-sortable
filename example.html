@@ -131,6 +131,9 @@
       var s1 = new Sortable(privateEl);
       s1.bind('li');
       s.connect(s1);
+      s1.on('update', function(el){
+          console.log(el);
+      });
 
       var dom = require('dom');
       dom('#add').on('click', function(){
