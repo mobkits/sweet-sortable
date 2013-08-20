@@ -6,12 +6,17 @@
   "version": "0.3.1",
   "keywords": ["draggable", "sortable"],
   "dependencies": {
-    "chemzqm/sortable": "*",
+    "component/matches-selector": "*",
+    "component/emitter": "*",
+    "component/events": "*",
+    "component/classes": "*",
+    "component/each": "*",
+    "yields/indexof": "*"
+  },
+  "development": {
     "component/dom": "*"
   },
   "license": "MIT",
   "main": "index.js",
-  "scripts": [
-    "index.js"
-  ]
+  "scripts": ["index.js"]
 }
