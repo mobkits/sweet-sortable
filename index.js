@@ -160,8 +160,11 @@ Sortable.prototype.ondragend = function(e){
   if (this.clone) remove(this.clone);
   this.draggable.style.display = this.display;
   classes(this.draggable).remove('dragging');
-  if (this.connect !== true && this.i == indexof(this.draggable)) return;
-  this.emit('update', this.draggable);
+  if (this.connected || this.i != indexof(this.draggable)) {
+    this.emit('update', this.draggable);
+  }
+  this.reset();
+  this.emit('end');
 }
 
 /**
@@ -178,7 +181,6 @@ Sortable.prototype.ondrop = function(e){
   }
   this.ondragend(e);
   this.emit('drop', e);
-  this.reset();
 }
 
 /**
@@ -191,13 +193,14 @@ Sortable.prototype.ondrop = function(e){
 
 Sortable.prototype.reset = function(){
   if (this.draggable) {
-    this.draggable.draggable = false;
+    this.draggable.draggable = '';
     this.draggable = null;
   }
-  this.emit('reset');
   this.display = null;
   this.i = null;
-
+  this.draggable = null;
+  this.clone = null;
+  this.connected = false;
   this.events.unbind('dragstart');
   this.events.unbind('dragover');
   this.events.unbind('dragenter');
@@ -207,17 +210,20 @@ Sortable.prototype.reset = function(){
 
 Sortable.prototype.connect = function(sortable) {
   var self = this;
-  var onupdate = function(el) {
-    sortable.emit('update', el);
-  }
-  this.on('reset', function () {
-    self.connect = false;
-    self.reset.bind(sortable);
-    self.off('update', onupdate);
+  this.on('update', function(el) {
+    if (this.connected) {
+      sortable.emit('update', el);
+    }
+  })
+  this.on('drop', function() {
+    sortable.reset();
+  })
+  sortable.on('end', function () {
+    self.reset();
   });
+
   return sortable.on('start', function(){
-    self.connect = true;
-    self.on('update', onupdate);
+    self.connected = true;
     self.bindEvents();
     self.draggable = sortable.draggable;
     self.clone = sortable.clone;
@@ -245,5 +251,5 @@ function up (node, selector, container) {
       return node;
     }
     node = node.parentNode;
-  } while (node !== container);
+  } while (node != container);
 }
