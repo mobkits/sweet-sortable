@@ -98,6 +98,18 @@
       <li>7</li>
     </ul>
 
+    <h2>Connect</h2>
+    <ul class='public'>
+      <li>Javascript</li>
+      <li>Lua</li>
+      <li>Google Go</li>
+      <li>Julia</li>
+    </ul>
+    <ul class='private'>
+      <li>go</li>
+      <li>python</li>
+    </ul>
+
     <script>
       var Sortable = require('sortable');
       var els = document.querySelectorAll('.numbers, .languages, .handle');
@@ -110,6 +122,16 @@
         sortable.ignore('[disabled]');
         sortable.bind('li');
       });
+
+      var publicEl = document.querySelector('.public');
+      var s = new Sortable(publicEl);
+      s.bind('li');
+
+      var privateEl = document.querySelector('.private');
+      var s1 = new Sortable(privateEl);
+      s1.bind('li');
+      s.connect(s1);
+
       var dom = require('dom');
       dom('#add').on('click', function(){
           dom('<li>Python</li>').appendTo('#languages');

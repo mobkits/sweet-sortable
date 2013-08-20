@@ -74,14 +74,18 @@ Sortable.prototype.onmousedown = function(e) {
   this.draggable = up(e.target, this.selector, this.el);
   if (!this.draggable) return;
   this.draggable.draggable = true;
+  this.bindEvents();
+  this.clone = this.draggable.cloneNode(false);
+  classes(this.clone).add('sortable-placeholder');
+  return this;
+}
+
+Sortable.prototype.bindEvents = function() {
   this.events.bind('dragstart');
   this.events.bind('dragover');
   this.events.bind('dragenter');
   this.events.bind('dragend');
   this.events.bind('drop');
-  this.clone = this.draggable.cloneNode(false);
-  classes(this.clone).add('sortable-placeholder');
-  return this;
 }
 
 Sortable.prototype.onmouseup = function(e) {
@@ -90,6 +94,7 @@ Sortable.prototype.onmouseup = function(e) {
 
 Sortable.prototype.remove = function() {
   this.events.unbind();
+  this.off();
 }
 
 
@@ -167,8 +172,10 @@ Sortable.prototype.ondragend = function(e){
  */
 
 Sortable.prototype.ondrop = function(e){
-  e.stopPropagation();
-  this.el.insertBefore(this.draggable, this.clone);
+  var p = this.clone.parentNode;
+  if (p && p == this.el) {
+    this.el.insertBefore(this.draggable, this.clone);
+  }
   this.ondragend(e);
   this.emit('drop', e);
   this.reset();
@@ -195,6 +202,18 @@ Sortable.prototype.reset = function(){
   this.events.unbind('dragenter');
   this.events.unbind('dragend');
   this.events.unbind('drop');
+}
+
+Sortable.prototype.connect = function(sortable) {
+  var self = this;
+  this.on('drop', this.reset.bind(sortable));
+  return sortable.on('start', function(){
+    self.bindEvents();
+    self.draggable = sortable.draggable;
+    self.clone = sortable.clone;
+    self.display = sortable.display;
+    self.i = sortable.i;
+  });
 }
 
 /**

@@ -1,6 +1,10 @@
 {
-  "name": "sortable-example",
-  "version": "0.0.1",
+  "name": "sortable",
+  "repo": "chemzqm/sortable",
+  "description": "UI Sortable component.",
+  "demo": "http://chemzqm.github.io/sortable/index.html",
+  "version": "0.3.1",
+  "keywords": ["draggable", "sortable"],
   "dependencies": {
     "chemzqm/sortable": "*",
     "component/dom": "*"
