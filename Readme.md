@@ -48,6 +48,10 @@ Initialize Sortable with `el`.
 
 Bind internal events with selector, this method must be called.
 
+#### .max(count)
+
+Set the max item `count` the element of the selector.
+
 #### .ignore(selector)
 
 Ignore items matching the given `selector`.

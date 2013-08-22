@@ -125,7 +125,11 @@
 
       var publicEl = document.querySelector('.public');
       var s = new Sortable(publicEl);
+      s.max(5);
       s.bind('li');
+      s.on('max', function(count) {
+        console.log('max count ' + count +' reached');
+      });
 
       var privateEl = document.querySelector('.private');
       var s1 = new Sortable(privateEl);
