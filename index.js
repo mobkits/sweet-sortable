@@ -146,7 +146,9 @@ Sortable.prototype.ondragover = function(e){
 
   e.preventDefault();
   var len = this.el.querySelectorAll(this.selector).length;
-  if (!contains(this.el, this.clone) &&
+  if (
+    this.connected &&
+    !contains(this.el, this.clone) &&
     len == this.maxCount){
     this.emitMax = this.emitMax || delay(200, function() {
       this.emit('max', this.maxCount);
