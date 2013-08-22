@@ -7,6 +7,7 @@ var matches = require('matches-selector')
   , classes = require('classes')
   , events = require('events')
   , indexof = require('indexof')
+  , delay = require('delay')
   , each = require('each');
 
 /**
@@ -44,6 +45,17 @@ emitter(Sortable.prototype);
 
 Sortable.prototype.ignore = function(selector){
   this.ignored = selector;
+  return this;
+}
+
+/**
+ * Set the max item count of this sortable
+ *
+ * @param {String} count
+ * @api public
+ */
+Sortable.prototype.max = function(count){
+  this.maxCount = count;
   return this;
 }
 
@@ -133,6 +145,15 @@ Sortable.prototype.ondragover = function(e){
     , i;
 
   e.preventDefault();
+  var len = this.el.querySelectorAll(this.selector).length;
+  if (!contains(this.el, this.clone) &&
+    len == this.maxCount){
+    this.emitMax = this.emitMax || delay(200, function() {
+      this.emit('max', this.maxCount);
+    }.bind(this));
+    this.emitMax();
+    return;
+  }
   if (!this.draggable || el == this.el) return;
   e.dataTransfer.dropEffect = 'move';
   this.draggable.style.display = 'none';
@@ -208,6 +229,35 @@ Sortable.prototype.reset = function(){
   this.events.unbind('drop');
 }
 
+/**
+* Connect the given `sortable`.
+*
+* once connected you can drag elements from
+* the given sortable to this sortable.
+*
+* Example:
+*
+*      one <> two
+*
+*      one
+*      .connect(two)
+*      .connect(one);
+*
+*      two > one
+*
+*      one
+*      .connect(two)
+*
+*      one > two > three
+*
+*      three
+*      .connect(two)
+*      .connect(one);
+*
+* @param {Sortable} sortable
+* @return {Sortable} the given sortable.
+* @api public
+*/
 Sortable.prototype.connect = function(sortable) {
   var self = this;
   this.on('update', function(el) {
@@ -243,6 +293,23 @@ Sortable.prototype.connect = function(sortable) {
 function remove (el) {
   if (!el.parentNode) return;
   el.parentNode.removeChild(el);
+}
+
+/**
+ * Check if parent node contains node.
+ *
+ * @param {String} parent
+ * @param {String} node
+ * @api public
+ */
+function contains (parent, node) {
+  do {
+    node = node.parentNode;
+    if (node == parent) {
+      return true;
+    }
+  } while (node && node.parentNode);
+  return false;
 }
 
 function up (node, selector, container) {
