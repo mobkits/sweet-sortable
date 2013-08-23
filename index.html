@@ -110,6 +110,14 @@
       <li>python</li>
     </ul>
 
+    <h2>Connect empty</h2>
+    <ul class='p1' style="min-height:30px;">
+    </ul>
+    <ul class='p2'>
+      <li>go</li>
+      <li>python</li>
+    </ul>
+
     <script>
       var Sortable = require('sortable');
       var els = document.querySelectorAll('.numbers, .languages, .handle');
@@ -146,6 +154,21 @@
       dom('#remove').on('click', function(){
           dom('#languages li').last().remove();
       });
+      (function(){
+        var p1 = document.querySelector('.p1');
+        var s1 = new Sortable(p1);
+        s1.bind('li');
+        s1.on('update', function(el){
+            console.log(el);
+        });
+        var p2 = document.querySelector('.p2');
+        var s2 = new Sortable(p2);
+        s2.bind('li');
+        s1.connect(s2);
+        s2.on('update', function(el){
+            console.log(el);
+        });
+      })()
     </script>
   </body>
 </html>
