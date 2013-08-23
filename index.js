@@ -156,12 +156,15 @@ Sortable.prototype.ondragover = function(e){
     this.emitMax();
     return;
   }
+  var emptyTarget = (this.connected && len === 0);
+  if (emptyTarget) {
+    return this.el.appendChild(this.clone);
+  }
   if (!this.draggable || el == this.el) return;
   e.dataTransfer.dropEffect = 'move';
   this.draggable.style.display = 'none';
-
   // parent
-  while (el.parentElement != this.el) el = el.parentElement;
+  while (el && el.parentElement != this.el) el = el.parentElement;
   next = el;
   ci = indexof(this.clone);
   i = indexof(el);
