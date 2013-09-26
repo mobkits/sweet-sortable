@@ -40,7 +40,7 @@ sortable.bind('li');
   - `update`, emitted when sort changes happen.
   - `start`(e), emitted when the drag starts.
   - `drop`(e), emitted when drop happens.
-  - `max` (maxcount), emitted when connected and dragover with other connect item if there's maxCount limit.
+  - `max` (maxcount), emitted when connected and dragover with other connect item if max count reaches.
 
 #### Sortable(el)
 
