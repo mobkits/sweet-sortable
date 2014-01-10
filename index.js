@@ -160,8 +160,8 @@ Sortable.prototype.ondragover = function(e){
     this.emitMax();
     return;
   }
-  var emptyTarget = (this.connected && len === 0);
-  if (emptyTarget) {
+  //empty target
+  if (this.connected && len === 0) {
     return this.el.appendChild(this.clone);
   }
   if (!this.draggable || el == this.el) return;
