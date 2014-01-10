@@ -165,6 +165,7 @@
         var s2 = new Sortable(p2);
         s2.bind('li');
         s1.connect(s2);
+        s2.connect(s1);
         s2.on('update', function(el){
             console.log(el);
         });

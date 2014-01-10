@@ -1,4 +1,3 @@
-
 # sortable
 
   UI Sortable component, see the [demo](http://chemzqm.github.io/sortable/index.html).
@@ -8,6 +7,8 @@
   The changes of this fork is the D&D events is automatically bind when `mousedown` event is triggered
   in the element, and removed when `mouseup` triggered, so no worry about the element added or removed on
   the fly, you can even inintialize sortable with an empty element.
+
+  Another change is the total item count could be limited by `max` method.
 
 ## Installation
 
@@ -39,6 +40,7 @@ sortable.bind('li');
   - `update`, emitted when sort changes happen.
   - `start`(e), emitted when the drag starts.
   - `drop`(e), emitted when drop happens.
+  - `max` (maxcount), emitted when connected and dragover with other connect item if max count reaches.
 
 #### Sortable(el)
 

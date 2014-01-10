@@ -7,9 +7,10 @@ var matches = require('matches-selector')
   , classes = require('classes')
   , events = require('events')
   , indexof = require('indexof')
-  , delay = require('delay')
-  , each = require('each');
+  , closest = require('closest')
+  , delay = require('delay');
 
+var styles = window.getComputedStyle;
 /**
  * export `Sortable`
  */
@@ -83,12 +84,16 @@ Sortable.prototype.onmousedown = function(e) {
     this.match = matches(e.target, this._handle);
   }
   this.reset();
-  this.draggable = up(e.target, this.selector, this.el);
+  this.draggable = closest(e.target, this.selector, true, this.el);
   if (!this.draggable) return;
   this.draggable.draggable = true;
   this.bindEvents();
   this.clone = this.draggable.cloneNode(false);
   classes(this.clone).add('sortable-placeholder');
+  var h = styles(this.draggable).height;
+  var w = styles(this.draggable).width;
+  this.clone.style.height = h;
+  this.clone.style.width = w;
   return this;
 }
 
@@ -156,8 +161,8 @@ Sortable.prototype.ondragover = function(e){
     this.emitMax();
     return;
   }
-  var emptyTarget = (this.connected && len === 0);
-  if (emptyTarget) {
+  //empty target
+  if (this.connected && len === 0) {
     return this.el.appendChild(this.clone);
   }
   if (!this.draggable || el == this.el) return;
@@ -183,7 +188,7 @@ Sortable.prototype.ondragover = function(e){
 
 Sortable.prototype.ondragend = function(e){
   if (!this.draggable) return;
-  if (this.clone) remove(this.clone);
+  if (this.clone) this.clone.parentNode.removeChild(this.clone);
   this.draggable.style.display = this.display;
   classes(this.draggable).remove('dragging');
   if (this.connected || this.i != indexof(this.draggable)) {
@@ -288,19 +293,6 @@ Sortable.prototype.connect = function(sortable) {
 }
 
 /**
- * Remove the given `el`.
- *
- * @param {Element} el
- * @return {Element}
- * @api private
- */
-
-function remove (el) {
-  if (!el.parentNode) return;
-  el.parentNode.removeChild(el);
-}
-
-/**
  * Check if parent node contains node.
  *
  * @param {String} parent
@@ -317,11 +309,3 @@ function contains (parent, node) {
   return false;
 }
 
-function up (node, selector, container) {
-  do {
-    if (matches(node, selector)) {
-      return node;
-    }
-    node = node.parentNode;
-  } while (node != container);
-}

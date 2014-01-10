@@ -3,7 +3,7 @@
   "repo": "chemzqm/sortable",
   "description": "UI Sortable component.",
   "demo": "http://chemzqm.github.io/sortable/index.html",
-  "version": "0.3.1",
+  "version": "0.3.3",
   "keywords": ["draggable", "sortable"],
   "dependencies": {
     "component/matches-selector": "*",
@@ -11,7 +11,7 @@
     "component/emitter": "*",
     "component/events": "*",
     "component/classes": "*",
-    "component/each": "*",
+    "discore/closest": "*",
     "yields/delay": "*",
     "yields/indexof": "*"
   },
