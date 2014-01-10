@@ -7,8 +7,7 @@ var matches = require('matches-selector')
   , classes = require('classes')
   , events = require('events')
   , indexof = require('indexof')
-  , delay = require('delay')
-  , each = require('each');
+  , delay = require('delay');
 
 var styles = window.getComputedStyle;
 /**

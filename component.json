@@ -10,7 +10,6 @@
     "component/emitter": "*",
     "component/events": "*",
     "component/classes": "*",
-    "component/each": "*",
     "yields/delay": "*",
     "yields/indexof": "*"
   },
