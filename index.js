@@ -10,6 +10,7 @@ var matches = require('matches-selector')
   , delay = require('delay')
   , each = require('each');
 
+var styles = window.getComputedStyle;
 /**
  * export `Sortable`
  */
@@ -89,6 +90,10 @@ Sortable.prototype.onmousedown = function(e) {
   this.bindEvents();
   this.clone = this.draggable.cloneNode(false);
   classes(this.clone).add('sortable-placeholder');
+  var h = styles(this.draggable).height;
+  var w = styles(this.draggable).width;
+  this.clone.style.height = h;
+  this.clone.style.width = w;
   return this;
 }
 
