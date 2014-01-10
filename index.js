@@ -323,10 +323,10 @@ function contains (parent, node) {
 }
 
 function up (node, selector, container) {
-  do {
+  while (node != container) {
     if (matches(node, selector)) {
       return node;
     }
     node = node.parentNode;
-  } while (node != container);
+  }
 }
