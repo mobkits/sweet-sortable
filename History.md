@@ -1,3 +1,7 @@
+0.3.2 / 2013-01-10
+==================
+
+ * Set height and width on the placeholder element
 
 0.3.0 / 2013-07-24
 ==================
