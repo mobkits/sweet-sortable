@@ -1,10 +1,12 @@
 {
   "name": "sortable",
-  "repo": "chemzqm/sortable",
   "description": "UI Sortable component.",
   "demo": "http://chemzqm.github.io/sortable/index.html",
   "version": "0.3.3",
-  "keywords": ["draggable", "sortable"],
+  "keywords": [
+    "draggable",
+    "sortable"
+  ],
   "dependencies": {
     "component/matches-selector": "*",
     "component/emitter": "*",
@@ -15,9 +17,14 @@
     "yields/indexof": "*"
   },
   "development": {
-    "component/dom": "*"
+    "dependencies": {
+      "component/dom": "*"
+    }
   },
   "license": "MIT",
   "main": "index.js",
-  "scripts": ["index.js"]
+  "scripts": [
+    "index.js"
+  ],
+  "repository": "chemzqm/sortable"
 }
