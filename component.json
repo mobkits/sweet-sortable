@@ -10,7 +10,7 @@
   "dependencies": {
     "component/matches-selector": "*",
     "component/emitter": "*",
-    "component/events": "*",
+    "chemzqm/events": "*",
     "component/classes": "*",
     "discore/closest": "*",
     "yields/delay": "*",
