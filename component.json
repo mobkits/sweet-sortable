@@ -2,7 +2,7 @@
   "name": "sortable",
   "description": "UI Sortable component.",
   "demo": "http://chemzqm.github.io/sortable/index.html",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "keywords": [
     "draggable",
     "sortable"
