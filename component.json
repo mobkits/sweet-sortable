@@ -10,11 +10,11 @@
   "dependencies": {
     "component/matches-selector": "*",
     "component/emitter": "*",
-    "chemzqm/events": "*",
     "component/classes": "*",
-    "discore/closest": "*",
-    "yields/delay": "*",
-    "yields/indexof": "*"
+    "component/closest": "*",
+    "component/indexof": "*",
+    "component/events": "*",
+    "yields/delay": "*"
   },
   "development": {
     "dependencies": {

@@ -1,0 +1,40 @@
+{
+  "name": "sortable-component",
+  "version": "1.0.0",
+  "description": "UI Sortable with dynamic element and limit support.",
+  "main": "index.js",
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chemzqm/sortable.git"
+  },
+  "keywords": [
+    "sortable"
+  ],
+  "author": "chemzqm@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chemzqm/sortable/issues"
+  },
+  "homepage": "https://github.com/chemzqm/sortable#readme",
+  "browser": {
+    "classes": "component-classes",
+    "closest": "component-closest",
+    "emitter": "component-emitter",
+    "events": "component-events",
+    "indexof": "component-indexof",
+    "matches-selector": "component-matches-selector",
+    "delay": "delay-component"
+  },
+  "dependencies": {
+    "component-classes": "^1.2.4",
+    "component-closest": "^1.0.0",
+    "component-emitter": "^1.2.0",
+    "component-events": "^1.0.9",
+    "component-indexof": "0.0.3",
+    "component-matches-selector": "^0.1.5",
+    "delay-component": "^1.0.1"
+  }
+}
