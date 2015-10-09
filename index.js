@@ -6,11 +6,18 @@ var matches = require('matches-selector')
   , emitter = require('emitter')
   , classes = require('classes')
   , events = require('events')
-  , indexof = require('indexof')
+  , indexOf = require('indexof')
   , closest = require('closest')
   , delay = require('delay');
 
 var styles = window.getComputedStyle;
+
+function indexof(el) {
+  if (!el.parentNode) return -1;
+  var list = el.parentNode.children;
+  if (!list || list.length === 0) return -1;
+  return indexof(list, el);
+}
 /**
  * export `Sortable`
  */
@@ -84,7 +91,7 @@ Sortable.prototype.onmousedown = function(e) {
     this.match = matches(e.target, this._handle);
   }
   this.reset();
-  this.draggable = closest(e.target, this.selector, true, this.el);
+  this.draggable = closest(e.target, this.selector, this.el);
   if (!this.draggable) return;
   this.draggable.draggable = true;
   this.bindEvents();
