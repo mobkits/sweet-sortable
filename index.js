@@ -6,7 +6,6 @@ var matches = require('matches-selector')
   , emitter = require('emitter')
   , classes = require('classes')
   , events = require('events')
-  , indexOf = require('indexof')
   , closest = require('closest')
   , delay = require('delay');
 
@@ -44,7 +43,7 @@ function Sortable(el){
 emitter(Sortable.prototype);
 
 /**
- * Ignore items that don't match `selector`.
+ * Ignore items that t match the `selector`.
  *
  * @param {String} selector
  * @return {Sortable}
@@ -88,7 +87,7 @@ Sortable.prototype.bind = function (selector){
 
 Sortable.prototype.onmousedown = function(e) {
   if (this._handle) {
-    this.match = matches(e.target, this._handle);
+    this.match = matchWithIn(e.target, this._handle, this.el);
   }
   this.reset();
   this.draggable = closest(e.target, this.selector, this.el);
@@ -130,7 +129,7 @@ Sortable.prototype.remove = function() {
  */
 
 Sortable.prototype.ondragstart = function(e){
-  if (this.ignored && matches(e.target, this.ignored)) return e.preventDefault();
+  if (this.ignored && matchWithIn(e.target, this.ignored, this.el)) return e.preventDefault();
   if (this._handle && !this.match) return e.preventDefault();
   var target = this.draggable;
   this.display = window.getComputedStyle(target).display;
@@ -304,7 +303,7 @@ Sortable.prototype.connect = function(sortable) {
  *
  * @param {String} parent
  * @param {String} node
- * @api public
+ * @api private
  */
 function contains (parent, node) {
   do {
@@ -314,5 +313,23 @@ function contains (parent, node) {
     }
   } while (node && node.parentNode);
   return false;
+}
+
+/**
+ * Check if an element within a element which matches selector
+ *
+ * @param  {Element}  el
+ * @param {String} selector
+ * @param {Element} topEl
+ * @return {Boolean}
+ * @api private
+ */
+function matchWithIn(el, selector, topEl) {
+  do {
+    if (matches(el, selector)) return true
+    if (el === topEl) break;
+    el = el.parentNode
+  } while(el)
+  return false
 }
 

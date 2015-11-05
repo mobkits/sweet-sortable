@@ -1,9 +1,5 @@
-
-build: components index.js
-	@component build --dev
-
-components: component.json
-	@component install --dev
+dev:
+	@webpack example/example.js example/bundle.js -w -d
 
 doc:
 	@webpack example/example.js example/bundle.js
