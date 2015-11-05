@@ -26,15 +26,22 @@
     "events": "component-events",
     "indexof": "component-indexof",
     "matches-selector": "component-matches-selector",
-    "delay": "delay-component"
+    "delay": "delay-component",
+    "event": "component-event"
   },
   "dependencies": {
     "component-classes": "^1.2.4",
     "component-closest": "^1.0.0",
     "component-emitter": "^1.2.0",
+    "component-event": "^0.1.4",
     "component-events": "^1.0.9",
     "component-indexof": "0.0.3",
     "component-matches-selector": "^0.1.5",
-    "delay-component": "^1.0.1"
+    "computed-style": "^0.3.0",
+    "delay-component": "^1.0.1",
+    "per-frame": "^3.0.1",
+    "throttleit": "^1.0.0",
+    "touchaction-property": "0.0.1",
+    "uid": "0.0.2"
   }
 }

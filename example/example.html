@@ -3,6 +3,11 @@
   <head>
     <meta charset='utf-8'>
     <title>UI Sortable</title>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta content="email=no" name="format-detection" />
     <style>
 
       body {
@@ -51,21 +56,28 @@
         height: 20px;
         text-align: center;
       }
-
+      .handler {
+        cursor: ns-resize;
+      }
       [disabled] {
         opacity: .5;
       }
-
+      .sortable-dragging {
+        box-shadow: 0px 1px 2px rgba(34,34,34,0.7)
+      }
     </style>
   </head>
   <body>
 
-    <h2>List</h2>
+    <h2 draggable="true">List</h2>
     <ul id="languages" class='languages'>
       <li>Javascript</li>
       <li>Lua</li>
       <li>Google Go</li>
       <li>Julia</li>
+      <div>
+        1323
+      </div>
     </ul>
     <button id="add">add</button>
     <button id="remove">remove</button>
@@ -80,10 +92,10 @@
 
     <h2>Handle</h2>
     <ul class='handle'>
-      <li><span></span>Javascript</li>
-      <li><span></span>Lua</li>
-      <li><span></span>Google Go</li>
-      <li><span></span>Julia</li>
+      <li><span class="handler"></span>Javascript</li>
+      <li><span class="handler"></span>Lua</li>
+      <li><span class="handler"></span>Google Go</li>
+      <li><span class="handler"></span>Julia</li>
     </ul>
 
     <h2>Grid</h2>
