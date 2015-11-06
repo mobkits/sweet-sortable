@@ -1,4 +1,4 @@
-# sortable
+# sweet-sortable
 
   Make your element sortable with sweet animation of high performance.
 
