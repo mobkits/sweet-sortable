@@ -31,6 +31,8 @@
 
     $ npm install sweet-sortable
 
+Or use the umd version in [build folder](https://github.com/chemzqm/sweet-sortable/tree/master/build)
+
 ## Example
 
 ``` html
