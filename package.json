@@ -27,9 +27,12 @@
     "indexof": "component-indexof",
     "matches-selector": "component-matches-selector",
     "delay": "delay-component",
-    "event": "component-event"
+    "event": "component-event",
+    "raf": "component-raf",
+    "tween": "component-tween"
   },
   "dependencies": {
+    "class-transition": "0.0.6",
     "component-classes": "^1.2.4",
     "component-closest": "^1.0.0",
     "component-emitter": "^1.2.0",
@@ -37,11 +40,15 @@
     "component-events": "^1.0.9",
     "component-indexof": "0.0.3",
     "component-matches-selector": "^0.1.5",
+    "component-raf": "^1.2.0",
+    "component-tween": "^1.2.0",
     "computed-style": "^0.3.0",
     "delay-component": "^1.0.1",
+    "has-translate3d": "0.0.3",
     "per-frame": "^3.0.1",
     "throttleit": "^1.0.0",
     "touchaction-property": "0.0.1",
+    "transform-property": "0.0.1",
     "uid": "0.0.2"
   }
 }
