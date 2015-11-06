@@ -103,12 +103,14 @@
 	var classes = __webpack_require__(/*! classes */ 4)
 	var events = __webpack_require__(/*! events */ 6)
 	var closest = __webpack_require__(/*! closest */ 9)
-	var event = __webpack_require__(/*! event */ 12)
-	var throttle = __webpack_require__(/*! per-frame */ 13)
-	var touchAction = __webpack_require__(/*! touchaction-property */ 15)
-	var transform = __webpack_require__(/*! transform-property */ 16)
-	var util = __webpack_require__(/*! ./util */ 17)
-	var Animate = __webpack_require__(/*! ./animate */ 21)
+	var event = __webpack_require__(/*! event */ 7)
+	var throttle = __webpack_require__(/*! per-frame */ 12)
+	var touchAction = __webpack_require__(/*! touchaction-property */ 14)
+	var transform = __webpack_require__(/*! transform-property */ 15)
+	var util = __webpack_require__(/*! ./util */ 16)
+	var Animate = __webpack_require__(/*! ./animate */ 20)
+	var transition = __webpack_require__(/*! transition-property */ 19)
+	var transitionend = __webpack_require__(/*! transitionend-property */ 21)
 	
 	var hasTouch = 'ontouchmove' in window
 	/**
@@ -181,12 +183,8 @@
 	  return this;
 	}
 	
-	Sortable.prototype.direction = function (dir) {
-	  if (dir === 'h') {
-	    this.dir = 'horizon'
-	  } else {
-	    this.dir = 'vertical'
-	  }
+	Sortable.prototype.horizon = function () {
+	  this.dir = 'horizon'
 	}
 	
 	/**
@@ -212,6 +210,7 @@
 	  if (node) node = util.matchAsChild(node, this.el)
 	  // not found
 	  if (node == null) return
+	  if (node === this.disabled) return
 	  e.preventDefault()
 	  e.stopImmediatePropagation()
 	  this.timer = setTimeout(function () {
@@ -239,7 +238,7 @@
 	      position: 'absolute'
 	    })
 	    this.el.insertBefore(holder, node)
-	    this.bindDocument(true)
+	    this.bindDocument()
 	    this.dragging = true
 	    this.animate = new Animate(this.pel, node, holder)
 	    this.emit('start')
@@ -263,11 +262,13 @@
 	  this.x = touch.clientX
 	  this.y = touch.clientY
 	  if (this.dir === 'horizon') {
-	    util.translate(d, touch.clientX - sx, 0)
+	    this.tx = touch.clientX - sx
+	    util.translate(d, this.tx, 0)
 	    touchDir = dx > 0 ? 1 : 3
 	    if (dx === 0) return
 	  } else {
-	    util.translate(d, 0, touch.clientY - sy)
+	    this.ty = touch.clientY - sy
+	    util.translate(d, 0, this.ty)
 	    touchDir = dy > 0 ? 0 : 2
 	    if (dy === 0) return
 	  }
@@ -285,7 +286,6 @@
 	}
 	
 	Sortable.prototype.remove = function() {
-	  this.bindDocument(false)
 	  this.events.unbind();
 	  this.off();
 	}
@@ -344,20 +344,22 @@
 	  if (!this.dragging) return
 	  this.dragging = false
 	  this.timer = null
-	  var d = this.dragEl
-	  this.bindDocument(false)
+	  var p = this.el
+	  var el = this.dragEl
 	  var h = this.holder
-	  this.el.insertBefore(d, h)
-	  d.style[transform] = ''
-	  if (h && h.parentNode) h.parentNode.removeChild(h)
-	  util.copy(d.style, this.orig)
-	  classes(d).remove('sortable-dragging')
-	  if (util.indexof(d) !== this.index) {
-	    this.emit('update', d)
-	  }
-	  delete this.index
-	  this.animate = this.holder = this.dragEl = null
-	  this.emit('end')
+	  this.moveTo(h, function () {
+	    el.style[transform] = ''
+	    p.insertBefore(el, h)
+	    p.removeChild(h)
+	    util.copy(el.style, this.orig)
+	    classes(el).remove('sortable-dragging')
+	    if (util.indexof(el) !== this.index) {
+	      this.emit('update', el)
+	    }
+	    delete this.index
+	    this.animate = this.holder = this.dragEl = null
+	    this.emit('end')
+	  }.bind(this))
 	}
 	
 	
@@ -383,7 +385,6 @@
 	 *
 	 * @api private
 	 */
-	
 	Sortable.prototype.touchAction = function(value){
 	  var s = this.el.style;
 	  if (touchAction) {
@@ -391,20 +392,53 @@
 	  }
 	}
 	
-	Sortable.prototype.bindDocument = function (bind) {
-	  var _reset = this.reset.bind(this)
+	/**
+	 * Bind document event
+	 *
+	 * @api private
+	 */
+	Sortable.prototype.bindDocument = function () {
+	  var self = this
 	  if (hasTouch) {
-	    if (bind) {
-	      event.bind(document, 'touchend', _reset)
-	    } else {
-	      event.unbind(document, 'touchend', _reset)
-	    }
+	    event.bind(document, 'touchend', function reset() {
+	      event.unbind(document, 'touchend', reset)
+	      self.reset()
+	    })
 	  } else {
-	    if (bind) {
-	      event.bind(document, 'mouseup', _reset)
-	    } else {
+	    event.bind(document, 'mouseup', function _reset() {
 	      event.unbind(document, 'mouseup', _reset)
-	    }
+	      self.reset()
+	    })
+	  }
+	}
+	
+	Sortable.prototype.moveTo = function (target, cb) {
+	  var el = this.dragEl
+	  this.disabled = el
+	  util.transitionDuration(el, 300)
+	  var tx = this.tx || 0
+	  var ty = this.ty || 0
+	  var tr = target.getBoundingClientRect()
+	  var r = el.getBoundingClientRect()
+	  var x = tx + tr.left - r.left
+	  var y = ty + tr.top - r.top
+	  var nomove
+	  if (this.dir === 'horizon' && tr.left === r.left) nomove = true
+	  if (this.dir !== 'horizon' && tr.top === r.top) nomove = true
+	  var self = this
+	  var fn = function () {
+	    el.style[transition] = ''
+	    self.disabled = null
+	    cb()
+	  }
+	  if (nomove) {
+	    fn()
+	  } else {
+	    event.bind(el, transitionend, function end() {
+	      event.unbind(el, transitionend, end);
+	      fn()
+	    })
+	    util.translate(el, x, y)
 	  }
 	}
 
@@ -777,9 +811,9 @@
 
 /***/ },
 /* 5 */
-/*!**********************************************************!*\
-  !*** ./~/component-classes/~/component-indexof/index.js ***!
-  \**********************************************************/
+/*!**************************************!*\
+  !*** ./~/component-indexof/index.js ***!
+  \**************************************/
 /***/ function(module, exports) {
 
 	module.exports = function(arr, obj){
@@ -977,9 +1011,9 @@
 
 /***/ },
 /* 7 */
-/*!*******************************************************!*\
-  !*** ./~/component-events/~/component-event/index.js ***!
-  \*******************************************************/
+/*!************************************!*\
+  !*** ./~/component-event/index.js ***!
+  \************************************/
 /***/ function(module, exports) {
 
 	var bind = window.addEventListener ? 'addEventListener' : 'attachEvent',
@@ -1197,49 +1231,6 @@
 
 /***/ },
 /* 12 */
-/*!************************************!*\
-  !*** ./~/component-event/index.js ***!
-  \************************************/
-/***/ function(module, exports) {
-
-	var bind = window.addEventListener ? 'addEventListener' : 'attachEvent',
-	    unbind = window.removeEventListener ? 'removeEventListener' : 'detachEvent',
-	    prefix = bind !== 'addEventListener' ? 'on' : '';
-	
-	/**
-	 * Bind `el` event `type` to `fn`.
-	 *
-	 * @param {Element} el
-	 * @param {String} type
-	 * @param {Function} fn
-	 * @param {Boolean} capture
-	 * @return {Function}
-	 * @api public
-	 */
-	
-	exports.bind = function(el, type, fn, capture){
-	  el[bind](prefix + type, fn, capture || false);
-	  return fn;
-	};
-	
-	/**
-	 * Unbind `el` event `type`'s callback `fn`.
-	 *
-	 * @param {Element} el
-	 * @param {String} type
-	 * @param {Function} fn
-	 * @param {Boolean} capture
-	 * @return {Function}
-	 * @api public
-	 */
-	
-	exports.unbind = function(el, type, fn, capture){
-	  el[unbind](prefix + type, fn, capture || false);
-	  return fn;
-	};
-
-/***/ },
-/* 13 */
 /*!******************************!*\
   !*** ./~/per-frame/index.js ***!
   \******************************/
@@ -1249,7 +1240,7 @@
 	 * Module Dependencies.
 	 */
 	
-	var raf = __webpack_require__(/*! raf */ 14);
+	var raf = __webpack_require__(/*! raf */ 13);
 	
 	/**
 	 * Export `throttle`.
@@ -1285,7 +1276,7 @@
 
 
 /***/ },
-/* 14 */
+/* 13 */
 /*!**********************************************!*\
   !*** ./~/per-frame/~/component-raf/index.js ***!
   \**********************************************/
@@ -1328,7 +1319,7 @@
 
 
 /***/ },
-/* 15 */
+/* 14 */
 /*!*****************************************!*\
   !*** ./~/touchaction-property/index.js ***!
   \*****************************************/
@@ -1357,7 +1348,7 @@
 
 
 /***/ },
-/* 16 */
+/* 15 */
 /*!***************************************!*\
   !*** ./~/transform-property/index.js ***!
   \***************************************/
@@ -1385,16 +1376,16 @@
 
 
 /***/ },
-/* 17 */
+/* 16 */
 /*!*********************!*\
   !*** ./lib/util.js ***!
   \*********************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var styles = __webpack_require__(/*! computed-style */ 18)
-	var transform = __webpack_require__(/*! transform-property */ 16)
-	var has3d = __webpack_require__(/*! has-translate3d */ 19)
-	var transition = __webpack_require__(/*! transition-property */ 24)
+	var styles = __webpack_require__(/*! computed-style */ 17)
+	var transform = __webpack_require__(/*! transform-property */ 15)
+	var has3d = __webpack_require__(/*! has-translate3d */ 18)
+	var transition = __webpack_require__(/*! transition-property */ 19)
 	
 	/**
 	 * Get the child of topEl by element within a child
@@ -1548,15 +1539,15 @@
 	exports.transitionDuration = function(el, ms){
 	  var s = el.style;
 	  if (!prefix) {
-	    s[transition] = ms + 'ms transform linear'
+	    s[transition] = ms + 'ms transform ease-in-out'
 	  } else {
-	    s[transition] = ms + 'ms -' + prefix + '-transform linear'
+	    s[transition] = ms + 'ms -' + prefix + '-transform ease-in-out'
 	  }
 	}
 
 
 /***/ },
-/* 18 */
+/* 17 */
 /*!*********************************************************!*\
   !*** ./~/computed-style/dist/computedStyle.commonjs.js ***!
   \*********************************************************/
@@ -1592,14 +1583,14 @@
 
 
 /***/ },
-/* 19 */
+/* 18 */
 /*!************************************!*\
   !*** ./~/has-translate3d/index.js ***!
   \************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	
-	var prop = __webpack_require__(/*! transform-property */ 20);
+	var prop = __webpack_require__(/*! transform-property */ 15);
 	
 	// IE <=8 doesn't have `getComputedStyle`
 	if (!prop || !window.getComputedStyle) {
@@ -1625,46 +1616,47 @@
 
 
 /***/ },
-/* 20 */
-/*!*********************************************************!*\
-  !*** ./~/has-translate3d/~/transform-property/index.js ***!
-  \*********************************************************/
+/* 19 */
+/*!****************************************!*\
+  !*** ./~/transition-property/index.js ***!
+  \****************************************/
 /***/ function(module, exports) {
 
-	
 	var styles = [
-	  'webkitTransform',
-	  'MozTransform',
-	  'msTransform',
-	  'OTransform',
-	  'transform'
-	];
+	  'transition',
+	  'webkitTransition',
+	  'MozTransition',
+	  'OTransition',
+	  'msTransition'
+	]
 	
-	var el = document.createElement('p');
-	var style;
+	var el = document.createElement('p')
+	var style
 	
 	for (var i = 0; i < styles.length; i++) {
-	  style = styles[i];
-	  if (null != el.style[style]) {
-	    module.exports = style;
-	    break;
+	  if (null != el.style[styles[i]]) {
+	    style = styles[i]
+	    break
 	  }
 	}
+	el = null
+	
+	module.exports = style
 
 
 /***/ },
-/* 21 */
+/* 20 */
 /*!************************!*\
   !*** ./lib/animate.js ***!
   \************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(/*! ./util */ 17)
-	var transform = __webpack_require__(/*! transform-property */ 16)
-	var transition = __webpack_require__(/*! transition-property */ 24)
-	var transitionend = __webpack_require__(/*! transitionend-property */ 22)
-	var event = __webpack_require__(/*! event */ 12)
-	var uid = __webpack_require__(/*! uid */ 23)
+	var util = __webpack_require__(/*! ./util */ 16)
+	var transform = __webpack_require__(/*! transform-property */ 15)
+	var transition = __webpack_require__(/*! transition-property */ 19)
+	var transitionend = __webpack_require__(/*! transitionend-property */ 21)
+	var event = __webpack_require__(/*! event */ 7)
+	var uid = __webpack_require__(/*! uid */ 22)
 	
 	function Animate(pel, dragEl, holder) {
 	  var d = this.dragEl = dragEl
@@ -1810,7 +1802,7 @@
 
 
 /***/ },
-/* 22 */
+/* 21 */
 /*!*******************************************!*\
   !*** ./~/transitionend-property/index.js ***!
   \*******************************************/
@@ -1843,7 +1835,7 @@
 
 
 /***/ },
-/* 23 */
+/* 22 */
 /*!************************!*\
   !*** ./~/uid/index.js ***!
   \************************/
@@ -1866,35 +1858,6 @@
 	  len = len || 7;
 	  return Math.random().toString(35).substr(2, len);
 	}
-
-
-/***/ },
-/* 24 */
-/*!****************************************!*\
-  !*** ./~/transition-property/index.js ***!
-  \****************************************/
-/***/ function(module, exports) {
-
-	var styles = [
-	  'transition',
-	  'webkitTransition',
-	  'MozTransition',
-	  'OTransition',
-	  'msTransition'
-	]
-	
-	var el = document.createElement('p')
-	var style
-	
-	for (var i = 0; i < styles.length; i++) {
-	  if (null != el.style[styles[i]]) {
-	    style = styles[i]
-	    break
-	  }
-	}
-	el = null
-	
-	module.exports = style
 
 
 /***/ }
