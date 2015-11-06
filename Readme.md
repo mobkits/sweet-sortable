@@ -11,6 +11,7 @@
 * Handler element and disabled element can be set be css selector
 * Not using html5 D&D, you can style dragging element by css
 * Children can dynamic added or removed from list
+* ~4k when minified and gzip (umd version)
 
 ## Limitation
 
@@ -63,7 +64,7 @@ Initialize Sortable with `el`.
 
 Bind internal events with selector, this method must be called.
 
-### .horizon()
+#### .horizon()
 
 Make sortable works in horizon mode (default vertical mode)
 
