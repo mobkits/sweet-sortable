@@ -1,6 +1,7 @@
 # sortable
 
   Make your element sortable with sweet animation of high performance.
+  Tested on ios safari, Mac Safari, Chrome, firefox, mobile chrome
 
   [demo](http://chemzqm.github.io/sweet-sortable/index.html).
 

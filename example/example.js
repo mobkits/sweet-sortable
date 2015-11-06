@@ -1,25 +1,21 @@
 var Sortable = require('..')
 
-var els = document.querySelectorAll('.numbers, .languages, .handle')
-var ul = document.querySelector('.one')
+var els = document.querySelectorAll('.numbers, .languages, .handle, .horizon')
 
 // all
 ;[].slice.call(els).forEach(function(el){
   var sortable = new Sortable(el)
   if ('handle' == el.className) sortable.handle('span')
+  if ('horizon' == el.className) sortable.horizon()
   sortable.ignore('[disabled]')
   sortable.bind('li')
 })
 
-//s.on('max', function(count) {
-//  alert('max count ' + count +' reached')
-//})
-
-
+var more = ['Python', 'C#', 'Lisp', 'Matlab', 'SQL', 'XML', 'HTML', 'LaTeX', 'Prolog']
 var p = document.querySelector('#languages')
 document.getElementById('add').addEventListener('click', function(){
     var n = document.createElement('li')
-    n.innerHTML = 'Python'
+    n.innerHTML = more.pop() || 'C'
     p.appendChild(n)
 }, false)
 

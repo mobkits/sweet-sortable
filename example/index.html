@@ -24,8 +24,9 @@
 
       ul {
         list-style: none;
-        padding: 20px 20px;
-        width: 260px;
+        padding: 0;
+        margin: 10px 0;
+        width: 280px;
       }
 
       ul li {
@@ -35,15 +36,21 @@
         height: 38px;
       }
 
-      li span {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
+      li span.handler {
+        position: absolute;
+        top: 0px;
+        right: 20px;
+        display: block;
+        width: 40px;
+        height: 38px;
+        line-height: 38px;
+        float: right;
+        text-align: center;
         margin-right: 10px;
       }
 
       li span:before {
-        content: '❖';
+        content: '≡';
       }
 
       .numbers {
@@ -58,6 +65,9 @@
         height: 38px;
         text-align: center;
       }
+      .handle li {
+        position: relative;
+      }
       .handler {
         cursor: ns-resize;
       }
@@ -69,6 +79,14 @@
       }
       .sortable-holder {
         opacity: 0;
+      }
+      .horizon > li {
+        float: left;
+      }
+      .horizon:after{
+        content: "";
+        display: table;
+        clear: both;
       }
     </style>
   </head>
@@ -94,10 +112,17 @@
 
     <h2>Handle</h2>
     <ul class='handle'>
-      <li><span class="handler"></span>Javascript</li>
-      <li><span class="handler"></span>Lua</li>
-      <li><span class="handler"></span>Google Go</li>
-      <li><span class="handler"></span>Julia</li>
+      <li>Javascript<span class="handler"></span></li>
+      <li>Lua<span class="handler"></span></li>
+      <li>Google Go<span class="handler"></span></li>
+      <li>Julia<span class="handler"></span></li>
+    </ul>
+    <h2>Horizon</h2>
+    <ul class='horizon'>
+      <li>Javascript</li>
+      <li>Lua</li>
+      <li>Go</li>
+      <li>Julia</li>
     </ul>
     <script src='./bundle.js'></script>
   </body>
