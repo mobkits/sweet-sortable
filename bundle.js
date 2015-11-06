@@ -101,10 +101,10 @@
 	var closest = __webpack_require__(/*! closest */ 9)
 	var event = __webpack_require__(/*! event */ 7)
 	var throttle = __webpack_require__(/*! per-frame */ 12)
-	var transform = __webpack_require__(/*! transform-property */ 15)
-	var util = __webpack_require__(/*! ./util */ 16)
+	var transform = __webpack_require__(/*! transform-property */ 14)
+	var util = __webpack_require__(/*! ./util */ 15)
 	var Animate = __webpack_require__(/*! ./animate */ 20)
-	var transition = __webpack_require__(/*! transition-property */ 19)
+	var transition = __webpack_require__(/*! transition-property */ 18)
 	var transitionend = __webpack_require__(/*! transitionend-property */ 21)
 	
 	var hasTouch = 'ontouchmove' in window
@@ -244,9 +244,9 @@
 	Sortable.prototype.ontouchmove =
 	Sortable.prototype.onmousemove = function(e) {
 	  if (this.dragEl == null || this.index == null) return
+	  if (hasTouch && e.changedTouches && e.changedTouches.length !== 1) return
 	  e.preventDefault()
 	  e.stopPropagation()
-	  if (hasTouch && e.changedTouches && e.changedTouches.length !== 1) return
 	  var touch = util.getTouch(e)
 	  var touchDir = 0
 	  var sx = this.mouseStart.x
@@ -267,14 +267,14 @@
 	    touchDir = dy > 0 ? 0 : 2
 	    if (dy === 0) return
 	  }
-	  if (util.getPosition(touch.clientX, touch.clientY, this.el) !== 0) {
+	  if (util.getPosition(touch.clientX, touch.clientY, this.el)) {
 	    this.positionHolder(touch, touchDir)
 	  }
+	  return false
 	}
 	
 	Sortable.prototype.ontouchend =
 	Sortable.prototype.onmouseup = function(e) {
-	  e.stopPropagation()
 	  this.reset()
 	}
 	
@@ -295,6 +295,7 @@
 	var positionHolder = function (e, touchDir) {
 	  var d = this.dragEl
 	  if (d == null) return
+	  var delta = 10
 	  var rect = d.getBoundingClientRect()
 	  var x = rect.left + (rect.width || d.clientWidth)/2
 	  var y = rect.top + (rect.height || d.clientHeight)/2
@@ -304,17 +305,17 @@
 	    var node = children[i]
 	    if (node === d || node === h) continue
 	    var pos = util.getPosition(x, y, node)
-	    if (pos === 0) continue
+	    if (!pos) continue
 	    if (this.dir === 'horizon') {
-	      if (touchDir === 1) {
+	      if (touchDir === 1 && pos.dx > - delta) {
 	        this.animate.animate(node, 3)
-	      } else if (touchDir === 3){
+	      } else if (touchDir === 3 && pos.dx < delta){
 	        this.animate.animate(node, 1)
 	      }
 	    } else {
-	      if (touchDir === 2) {
+	      if (touchDir === 2 && pos.dy < delta) {
 	        this.animate.animate(node, 0)
-	      } else if (touchDir === 0){
+	      } else if (touchDir === 0 && pos.dy > -delta){
 	        this.animate.animate(node, 2)
 	      }
 	    }
@@ -1292,35 +1293,6 @@
 
 /***/ },
 /* 14 */
-/*!*****************************************!*\
-  !*** ./~/touchaction-property/index.js ***!
-  \*****************************************/
-/***/ function(module, exports) {
-
-	
-	/**
-	 * Module exports.
-	 */
-	
-	module.exports = touchActionProperty();
-	
-	/**
-	 * Returns "touchAction", "msTouchAction", or null.
-	 */
-	
-	function touchActionProperty(doc) {
-	  if (!doc) doc = document;
-	  var div = doc.createElement('div');
-	  var prop = null;
-	  if ('touchAction' in div.style) prop = 'touchAction';
-	  else if ('msTouchAction' in div.style) prop = 'msTouchAction';
-	  div = null;
-	  return prop;
-	}
-
-
-/***/ },
-/* 15 */
 /*!***************************************!*\
   !*** ./~/transform-property/index.js ***!
   \***************************************/
@@ -1348,17 +1320,17 @@
 
 
 /***/ },
-/* 16 */
+/* 15 */
 /*!*********************!*\
   !*** ./lib/util.js ***!
   \*********************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var styles = __webpack_require__(/*! computed-style */ 17)
-	var transform = __webpack_require__(/*! transform-property */ 15)
-	var has3d = __webpack_require__(/*! has-translate3d */ 18)
-	var transition = __webpack_require__(/*! transition-property */ 19)
-	var touchAction = __webpack_require__(/*! touchaction-property */ 14)
+	var styles = __webpack_require__(/*! computed-style */ 16)
+	var transform = __webpack_require__(/*! transform-property */ 14)
+	var has3d = __webpack_require__(/*! has-translate3d */ 17)
+	var transition = __webpack_require__(/*! transition-property */ 18)
+	var touchAction = __webpack_require__(/*! touchaction-property */ 19)
 	
 	/**
 	 * Get the child of topEl by element within a child
@@ -1391,18 +1363,13 @@
 	  var rect = el.getBoundingClientRect()
 	  var w = rect.width || el.clientWidth
 	  var h = rect.height || el.clientHeight
-	  var res = 0
 	  if (x > rect.left && x < rect.left + w && y > rect.top && y < rect.top + h) {
-	    res = res + 1
-	    // lt lb rt rb
-	    if (x >= rect.left + w/2) {
-	      res = res + 1
-	    }
-	    if (y >= rect.top + h/2) {
-	      res = res + 2
+	    return {
+	      dx: x - (rect.left + w/2),
+	      dy: y - (rect.top + h/2)
 	    }
 	  }
-	  return res
+	  return false
 	}
 	
 	/**
@@ -1439,7 +1406,8 @@
 	    width: pos.width + 'px',
 	    left: pos.left + 'px',
 	    top: pos.top + 'px',
-	    position: 'absolute'
+	    position: 'absolute',
+	    float: 'none'
 	  })
 	  return orig
 	}
@@ -1578,7 +1546,7 @@
 
 
 /***/ },
-/* 17 */
+/* 16 */
 /*!*********************************************************!*\
   !*** ./~/computed-style/dist/computedStyle.commonjs.js ***!
   \*********************************************************/
@@ -1614,14 +1582,14 @@
 
 
 /***/ },
-/* 18 */
+/* 17 */
 /*!************************************!*\
   !*** ./~/has-translate3d/index.js ***!
   \************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	
-	var prop = __webpack_require__(/*! transform-property */ 15);
+	var prop = __webpack_require__(/*! transform-property */ 14);
 	
 	// IE <=8 doesn't have `getComputedStyle`
 	if (!prop || !window.getComputedStyle) {
@@ -1647,7 +1615,7 @@
 
 
 /***/ },
-/* 19 */
+/* 18 */
 /*!****************************************!*\
   !*** ./~/transition-property/index.js ***!
   \****************************************/
@@ -1676,15 +1644,44 @@
 
 
 /***/ },
+/* 19 */
+/*!*****************************************!*\
+  !*** ./~/touchaction-property/index.js ***!
+  \*****************************************/
+/***/ function(module, exports) {
+
+	
+	/**
+	 * Module exports.
+	 */
+	
+	module.exports = touchActionProperty();
+	
+	/**
+	 * Returns "touchAction", "msTouchAction", or null.
+	 */
+	
+	function touchActionProperty(doc) {
+	  if (!doc) doc = document;
+	  var div = doc.createElement('div');
+	  var prop = null;
+	  if ('touchAction' in div.style) prop = 'touchAction';
+	  else if ('msTouchAction' in div.style) prop = 'msTouchAction';
+	  div = null;
+	  return prop;
+	}
+
+
+/***/ },
 /* 20 */
 /*!************************!*\
   !*** ./lib/animate.js ***!
   \************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(/*! ./util */ 16)
-	var transform = __webpack_require__(/*! transform-property */ 15)
-	var transition = __webpack_require__(/*! transition-property */ 19)
+	var util = __webpack_require__(/*! ./util */ 15)
+	var transform = __webpack_require__(/*! transform-property */ 14)
+	var transition = __webpack_require__(/*! transition-property */ 18)
 	var transitionend = __webpack_require__(/*! transitionend-property */ 21)
 	var event = __webpack_require__(/*! event */ 7)
 	var uid = __webpack_require__(/*! uid */ 22)
