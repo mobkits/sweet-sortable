@@ -49,26 +49,22 @@
 
 	var Sortable = __webpack_require__(/*! .. */ 1)
 	
-	var els = document.querySelectorAll('.numbers, .languages, .handle')
-	var ul = document.querySelector('.one')
+	var els = document.querySelectorAll('.numbers, .languages, .handle, .horizon')
 	
 	// all
 	;[].slice.call(els).forEach(function(el){
 	  var sortable = new Sortable(el)
 	  if ('handle' == el.className) sortable.handle('span')
+	  if ('horizon' == el.className) sortable.horizon()
 	  sortable.ignore('[disabled]')
 	  sortable.bind('li')
 	})
 	
-	//s.on('max', function(count) {
-	//  alert('max count ' + count +' reached')
-	//})
-	
-	
+	var more = ['Python', 'C#', 'Lisp', 'Matlab', 'SQL', 'XML', 'HTML', 'LaTeX', 'Prolog']
 	var p = document.querySelector('#languages')
 	document.getElementById('add').addEventListener('click', function(){
 	    var n = document.createElement('li')
-	    n.innerHTML = 'Python'
+	    n.innerHTML = more.pop() || 'C'
 	    p.appendChild(n)
 	}, false)
 	
@@ -105,7 +101,6 @@
 	var closest = __webpack_require__(/*! closest */ 9)
 	var event = __webpack_require__(/*! event */ 7)
 	var throttle = __webpack_require__(/*! per-frame */ 12)
-	var touchAction = __webpack_require__(/*! touchaction-property */ 14)
 	var transform = __webpack_require__(/*! transform-property */ 15)
 	var util = __webpack_require__(/*! ./util */ 16)
 	var Animate = __webpack_require__(/*! ./animate */ 20)
@@ -129,7 +124,7 @@
 	  if (!(this instanceof Sortable)) return new Sortable(el);
 	  if (!el) throw new TypeError('sortable(): expects an element');
 	  this.el = el
-	  this.touchAction('none')
+	  util.touchAction(el, 'none')
 	  this.events = events(el, this);
 	  this.pel = util.getRelativeElement(el)
 	}
@@ -204,7 +199,7 @@
 	Sortable.prototype.onmousedown = function(e) {
 	  // ignore
 	  if (this.ignored && closest(e.target, this.ignored, this.el)) return
-	  var touch = this.getTouch(e)
+	  var touch = util.getTouch(e)
 	  var node = this.findMatch(touch)
 	  // element to move
 	  if (node) node = util.matchAsChild(node, this.el)
@@ -252,7 +247,7 @@
 	  e.preventDefault()
 	  e.stopPropagation()
 	  if (hasTouch && e.changedTouches && e.changedTouches.length !== 1) return
-	  var touch = this.getTouch(e)
+	  var touch = util.getTouch(e)
 	  var touchDir = 0
 	  var sx = this.mouseStart.x
 	  var sy = this.mouseStart.y
@@ -275,12 +270,10 @@
 	  if (util.getPosition(touch.clientX, touch.clientY, this.el) !== 0) {
 	    this.positionHolder(touch, touchDir)
 	  }
-	  this.emit('move', touch)
 	}
 	
 	Sortable.prototype.ontouchend =
 	Sortable.prototype.onmouseup = function(e) {
-	  this.emit('done')
 	  e.stopPropagation()
 	  this.reset()
 	}
@@ -289,7 +282,6 @@
 	  this.events.unbind();
 	  this.off();
 	}
-	
 	
 	Sortable.prototype.findMatch = function(e){
 	  if (this._handle) return closest(e.target, this._handle, this.el)
@@ -314,9 +306,9 @@
 	    var pos = util.getPosition(x, y, node)
 	    if (pos === 0) continue
 	    if (this.dir === 'horizon') {
-	      if (touchDir === 1 && pos%2 === 0) {
+	      if (touchDir === 1) {
 	        this.animate.animate(node, 3)
-	      } else if (touchDir === 3 && pos%2 === 1){
+	      } else if (touchDir === 3){
 	        this.animate.animate(node, 1)
 	      }
 	    } else {
@@ -364,52 +356,17 @@
 	
 	
 	/**
-	 * Gets the appropriate "touch" object for the `e` event. The event may be from
-	 * a "mouse", "touch", or "Pointer" event, so the normalization happens here.
-	 *
-	 * @api private
-	 */
-	
-	Sortable.prototype.getTouch = function(e){
-	  // "mouse" and "Pointer" events just use the event object itself
-	  var touch = e;
-	  if (e.changedTouches && e.changedTouches.length > 0) {
-	    // W3C "touch" events use the `changedTouches` array
-	    touch = e.changedTouches[0];
-	  }
-	  return touch;
-	}
-	
-	/**
-	 * Sets the "touchAction" CSS style property to `value`.
-	 *
-	 * @api private
-	 */
-	Sortable.prototype.touchAction = function(value){
-	  var s = this.el.style;
-	  if (touchAction) {
-	    s[touchAction] = value;
-	  }
-	}
-	
-	/**
 	 * Bind document event
 	 *
 	 * @api private
 	 */
 	Sortable.prototype.bindDocument = function () {
 	  var self = this
-	  if (hasTouch) {
-	    event.bind(document, 'touchend', function reset() {
-	      event.unbind(document, 'touchend', reset)
-	      self.reset()
-	    })
-	  } else {
-	    event.bind(document, 'mouseup', function _reset() {
-	      event.unbind(document, 'mouseup', _reset)
-	      self.reset()
-	    })
-	  }
+	  var name = hasTouch ? 'touchend' : 'mouseup'
+	  event.bind(document, name, function reset() {
+	    event.unbind(document, name, reset)
+	    self.reset()
+	  })
 	}
 	
 	Sortable.prototype.moveTo = function (target, cb) {
@@ -418,13 +375,10 @@
 	  util.transitionDuration(el, 300)
 	  var tx = this.tx || 0
 	  var ty = this.ty || 0
-	  var tr = target.getBoundingClientRect()
-	  var r = el.getBoundingClientRect()
-	  var x = tx + tr.left - r.left
-	  var y = ty + tr.top - r.top
-	  var nomove
-	  if (this.dir === 'horizon' && tr.left === r.left) nomove = true
-	  if (this.dir !== 'horizon' && tr.top === r.top) nomove = true
+	  var dis = this.getDistance(el, target, this.animate.dir)
+	  var x = tx + dis.x
+	  var y = ty + dis.y
+	  var nomove = (dis.x ===0 && dis.y === 0)
 	  var self = this
 	  var fn = function () {
 	    el.style[transition] = ''
@@ -440,6 +394,24 @@
 	    })
 	    util.translate(el, x, y)
 	  }
+	}
+	
+	Sortable.prototype.getDistance = function (from, to, dir) {
+	  var x
+	  var y
+	  var r = from.getBoundingClientRect()
+	  var tr = to.getBoundingClientRect()
+	  var prop
+	  if (dir%2 === 0) {
+	    x = 0
+	    prop = dir === 0 ? 'top' : 'bottom'
+	    y = tr[prop] - r[prop]
+	  } else {
+	    y = 0
+	    prop = dir === 1 ? 'left' : 'right'
+	    x = tr[prop] - r[prop]
+	  }
+	  return {x: x, y: y}
 	}
 
 
@@ -1386,6 +1358,7 @@
 	var transform = __webpack_require__(/*! transform-property */ 15)
 	var has3d = __webpack_require__(/*! has-translate3d */ 18)
 	var transition = __webpack_require__(/*! transition-property */ 19)
+	var touchAction = __webpack_require__(/*! touchaction-property */ 14)
 	
 	/**
 	 * Get the child of topEl by element within a child
@@ -1451,6 +1424,14 @@
 	  }
 	}
 	
+	/**
+	 * Make an element absolute, return origin props
+	 *
+	 * @param  {Element}  el
+	 * @param {Element} pel
+	 * @return {Object}
+	 * @api public
+	 */
 	exports.makeAbsolute = function (el, pel) {
 	  var pos = getAbsolutePosition(el, pel)
 	  var orig = copy(el.style, {
@@ -1464,6 +1445,13 @@
 	}
 	
 	var doc = document.documentElement
+	/**
+	 * Get relative element of el
+	 *
+	 * @param  {Element}  el
+	 * @return {Element}
+	 * @api public
+	 */
 	exports.getRelativeElement = function (el) {
 	  do {
 	    if (el === doc) return el
@@ -1475,7 +1463,14 @@
 	  } while(el)
 	}
 	
-	var insertAfter = exports.insertAfter = function (newNode, ref) {
+	/**
+	 * Insert newNode after ref
+	 *
+	 * @param {Element} newNode
+	 * @param {Element} ref
+	 * @api public
+	 */
+	exports.insertAfter = function (newNode, ref) {
 	  if (ref.nextSibling) {
 	    ref.parentNode.insertBefore(newNode, ref.nextSibling)
 	  } else {
@@ -1483,6 +1478,15 @@
 	  }
 	}
 	
+	/**
+	 * Copy props from from to to
+	 * return original props
+	 *
+	 * @param {Object} to
+	 * @param {Object} from
+	 * @return {Object}
+	 * @api public
+	 */
 	var copy = exports.copy = function (to, from) {
 	  var orig = {}
 	  Object.keys(from).forEach(function (k) {
@@ -1492,6 +1496,13 @@
 	  return orig
 	}
 	
+	/**
+	 * Get index of element as children
+	 *
+	 * @param  {Element}  el
+	 * @return {Number}
+	 * @api public
+	 */
 	exports.indexof = function (el) {
 	  var children = el.parentNode.children
 	  for (var i = children.length - 1; i >= 0; i--) {
@@ -1502,26 +1513,10 @@
 	  }
 	}
 	
-	exports.transit = function (newNode, ref, position) {
-	  var rect = ref.getBoundingClientRect()
-	  var h = rect.height
-	  // var w = rect.width || newNode.clientWidth
-	  newNode.style.height = h + 'px'
-	  // var node = newNode.cloneNode(false)
-	  //console.log(styles(node, 'height'))
-	  //console.log(h/2)
-	  if (position === 'before') {
-	    ref.parentNode.insertBefore(newNode, ref)
-	  } else {
-	    insertAfter(newNode, ref)
-	  }
-	  return newNode
-	}
-	
 	/**
-	 * Translate to `x` `y`.
+	 * Translate el to `x` `y`.
 	 *
-	 * @api private
+	 * @api public
 	 */
 	exports.translate = function(el, x, y){
 	  var s = el.style
@@ -1535,7 +1530,14 @@
 	  }
 	}
 	
-	var prefix = transition.replace('transition', '').toLowerCase()
+	/**
+	 * Set transition duration to `ms`
+	 *
+	 * @param  {Element}  el
+	 * @param {Number} ms
+	 * @api public
+	 */
+	var prefix = transition.replace(/transition/i, '').toLowerCase()
 	exports.transitionDuration = function(el, ms){
 	  var s = el.style;
 	  if (!prefix) {
@@ -1544,6 +1546,35 @@
 	    s[transition] = ms + 'ms -' + prefix + '-transform ease-in-out'
 	  }
 	}
+	
+	/**
+	 * Gets the appropriate "touch" object for the `e` event. The event may be from
+	 * a "mouse", "touch", or "Pointer" event, so the normalization happens here.
+	 *
+	 * @api private
+	 */
+	exports.getTouch = function(e){
+	  // "mouse" and "Pointer" events just use the event object itself
+	  var touch = e;
+	  if (e.changedTouches && e.changedTouches.length > 0) {
+	    // W3C "touch" events use the `changedTouches` array
+	    touch = e.changedTouches[0];
+	  }
+	  return touch;
+	}
+	
+	/**
+	 * Sets the "touchAction" CSS style property to `value`.
+	 *
+	 * @api private
+	 */
+	exports.touchAction = function(el, value){
+	  var s = el.style;
+	  if (touchAction) {
+	    s[touchAction] = value;
+	  }
+	}
+	
 
 
 /***/ },
@@ -1680,6 +1711,7 @@
 	  if (!el.id) el.id = uid(7)
 	  var o = this.animates[el.id] || {}
 	  if (o.dir === dir) return
+	  this.dir = dir
 	  o.dir = dir
 	  // var holder = this.holder
 	  if (o.end) {
@@ -1781,8 +1813,7 @@
 	Animate.prototype.prev = function (el) {
 	  do {
 	    el = el.previousSibling
-	    if (el === this.dragEl) continue
-	    if (el === this.holder) continue
+	    if (el === this.dragEl || el === this.holder) continue
 	    if (el && el.nodeType === 1) return el
 	  } while (el)
 	  return null
@@ -1791,8 +1822,7 @@
 	Animate.prototype.next = function (el) {
 	  do {
 	    el = el.nextSibling
-	    if (el === this.dragEl) continue
-	    if (el === this.holder) continue
+	    if (el === this.dragEl || el === this.holder) continue
 	    if (el && el.nodeType === 1) return el
 	  } while (el)
 	  return null
