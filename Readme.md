@@ -1,18 +1,32 @@
 # sortable
 
-  UI Sortable component, see the [demo](http://chemzqm.github.io/sortable/index.html).
+  Make your element sortable with sweet animation of high performance.
 
-  Original repo [yields/sortable](https://github.com/yields/sortable)
+  [demo](http://chemzqm.github.io/sweet-sortable/index.html).
 
-  The changes of this fork is the D&D events is automatically bind when `mousedown` event is triggered
-  in the element, and removed when `mouseup` triggered, so no worry about the element added or removed on
-  the fly, you can even inintialize sortable with an empty element.
+## Features
 
-  Another change is the total item count could be limited by `max` method.
+* High performance animation
+* Support mobile and desktop
+* Handler element and disabled element can be set be css selector
+* Not using html5 D&D, you can style dragging element by css
+* Children can dynamic added or removed from list
+
+## Limitation
+
+* `border-box` must be used for `box-sizing`, eg:
+``` css
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+```
+* Only horizon and vertical sort supportted
+* Css transition property should **not** exist on dragging elements
+* No connect support right now
 
 ## Installation
 
-    $ component install chemzqm/sortable
+    $ npm install sweet-sortable
 
 ## Example
 
@@ -26,7 +40,7 @@
 ```
 
 ``` js
-var Sortable = require('sortable');
+var Sortable = require('sweet-sortable');
 var el = document.getElementById('languages');
 var sortable = new Sortable(el);
 sortable.ignore('[disabled]');
@@ -37,10 +51,9 @@ sortable.bind('li');
 
 #### events
 
-  - `update`, emitted when sort changes happen.
+  - `update`, emitted with change element when sort changes happen.
   - `start`(e), emitted when the drag starts.
-  - `drop`(e), emitted when drop happens.
-  - `max` (maxcount), emitted when connected and dragover with other connect item if max count reaches.
+  - `end`(e), emitted at the end of D&D
 
 #### Sortable(el)
 
@@ -50,10 +63,6 @@ Initialize Sortable with `el`.
 
 Bind internal events with selector, this method must be called.
 
-#### .max(count)
-
-Set the max item `count` the element of the selector.
-
 #### .ignore(selector)
 
 Ignore items matching the given `selector`.
@@ -62,15 +71,30 @@ Ignore items matching the given `selector`.
 
 Set the handle to `selector`.
 
-#### .connect(sortable)
-
-Connect to another sortable, the element of another sortable could be dragged to this sortable element.
-
-
 #### .remove()
 
-Unbind all the events.
+Unbind all the event listeners.
 
 ## License
 
-  MIT
+Sweet-sortable, make elements sortable with sweet animation
+Copyright © 2015 chemzqm@gmail.com
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+

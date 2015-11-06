@@ -49,6 +49,8 @@
     "throttleit": "^1.0.0",
     "touchaction-property": "0.0.1",
     "transform-property": "0.0.1",
+    "transition-property": "^1.0.0",
+    "transitionend-property": "0.0.2",
     "uid": "0.0.2"
   }
 }
