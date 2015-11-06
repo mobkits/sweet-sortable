@@ -63,6 +63,10 @@ Initialize Sortable with `el`.
 
 Bind internal events with selector, this method must be called.
 
+### .horizon()
+
+Make sortable works in horizon mode (default vertical mode)
+
 #### .ignore(selector)
 
 Ignore items matching the given `selector`.
