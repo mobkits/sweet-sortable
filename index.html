@@ -3,8 +3,15 @@
   <head>
     <meta charset='utf-8'>
     <title>UI Sortable</title>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta content="email=no" name="format-detection" />
     <style>
-
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
       body {
         padding: 80px;
         font-family: 'Helvetica Neue';
@@ -25,7 +32,7 @@
         display: block;
         padding: 8px;
         border-bottom: 1px solid #ddd;
-        height: 20px;
+        height: 38px;
       }
 
       li span {
@@ -47,20 +54,27 @@
         float: left;
         border: 1px solid #f0f0f0;
         margin: 8px;
-        width: 20px;
-        height: 20px;
+        width: 38px;
+        height: 38px;
         text-align: center;
       }
-
+      .handler {
+        cursor: ns-resize;
+      }
       [disabled] {
         opacity: .5;
       }
-
+      .sortable-dragging {
+        box-shadow: 0px 1px 2px rgba(34,34,34,0.7)
+      }
+      .sortable-holder {
+        opacity: 0;
+      }
     </style>
   </head>
   <body>
 
-    <h2>List</h2>
+    <h2 draggable="true">List</h2>
     <ul id="languages" class='languages'>
       <li>Javascript</li>
       <li>Lua</li>
@@ -80,41 +94,10 @@
 
     <h2>Handle</h2>
     <ul class='handle'>
-      <li><span></span>Javascript</li>
-      <li><span></span>Lua</li>
-      <li><span></span>Google Go</li>
-      <li><span></span>Julia</li>
-    </ul>
-
-    <h2>Grid</h2>
-    <ul class='numbers'>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>4</li>
-      <li>5</li>
-      <li>6</li>
-      <li>7</li>
-    </ul>
-
-    <h2>Connect</h2>
-    <ul class='public'>
-      <li>Javascript</li>
-      <li>Lua</li>
-      <li>Julia</li>
-    </ul>
-    <ul class='private'>
-      <li>Google Go</li>
-      <li>go</li>
-      <li>python</li>
-    </ul>
-
-    <h2>Connect empty</h2>
-    <ul class='p1' style="min-height:30px;">
-    </ul>
-    <ul class='p2'>
-      <li>go</li>
-      <li>python</li>
+      <li><span class="handler"></span>Javascript</li>
+      <li><span class="handler"></span>Lua</li>
+      <li><span class="handler"></span>Google Go</li>
+      <li><span class="handler"></span>Julia</li>
     </ul>
     <script src='./bundle.js'></script>
   </body>
