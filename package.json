@@ -1,5 +1,5 @@
 {
-  "name": "sortable-component",
+  "name": "sweet-sortable",
   "version": "0.1.0",
   "description": "UI Sortable with dynamic element and limit support.",
   "main": "index.js",
