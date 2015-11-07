@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chemzqm/sortable.git"
+    "url": "git+https://github.com/chemzqm/sweet-sortable.git"
   },
   "keywords": [
     "sortable", "animation"
@@ -16,9 +16,9 @@
   "author": "chemzqm@gmail.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/chemzqm/sortable/issues"
+    "url": "https://github.com/chemzqm/sweet-sortable/issues"
   },
-  "homepage": "https://github.com/chemzqm/sortable#readme",
+  "homepage": "https://github.com/chemzqm/sweet-sortable#readme",
   "browser": {
     "classes": "component-classes",
     "closest": "component-closest",
