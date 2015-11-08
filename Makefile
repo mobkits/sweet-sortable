@@ -9,8 +9,8 @@ doc:
 	@ghp-import example -n -p
 
 test:
+	@open example/index.html
 	@webpack example/example.js example/bundle.js -w -d
-	@open example.html
 
 clean:
 	rm -fr build components template.js
