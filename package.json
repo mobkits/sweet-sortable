@@ -1,6 +1,6 @@
 {
   "name": "sweet-sortable",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Make your element sortable with sweet animation of high performance.",
   "main": "index.js",
   "scripts": {
