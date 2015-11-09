@@ -60,9 +60,13 @@ sortable.bind('li');
   - `start`(e), emitted when the drag starts.
   - `end`(e), emitted at the end of D&D
 
-#### Sortable(el)
+#### Sortable(el, [options])
 
 Initialize Sortable with `el`.
+
+`options.delta` is the center distance number in px to config when the animation take place,
+
+increase the value if you want animation happens earlier.  default is 10
 
 #### .bind(selector)
 

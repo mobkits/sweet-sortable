@@ -6,7 +6,10 @@ var els = document.querySelectorAll('.numbers, .languages, .handle, .horizon')
 ;[].slice.call(els).forEach(function(el){
   var sortable = new Sortable(el)
   if ('handle' == el.className) sortable.handle('span')
-  if ('horizon' == el.className) sortable.horizon()
+  if ('horizon' == el.className) {
+    sortable.horizon()
+    sortable.delta = 0
+  }
   sortable.ignore('[disabled]')
   sortable.bind('li')
 })
