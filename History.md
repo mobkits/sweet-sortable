@@ -1,3 +1,6 @@
+# 1.0.3
+* make delta configurable, default 10
+
 # 1.0.2
 * fix translate function without had3d
 
