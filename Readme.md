@@ -4,6 +4,8 @@
 
   Works at least on ios safari, Mac Safari, Chrome, firefox, mobile chrome
 
+  Should not works at ie < 9
+
   [demo](http://chemzqm.github.io/sweet-sortable/index.html).
 
 ## Features
