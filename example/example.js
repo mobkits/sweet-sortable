@@ -14,6 +14,12 @@ var els = document.querySelectorAll('.numbers, .languages, .handle, .horizon')
   sortable.bind('li')
 })
 
+//var tr = document.querySelector('tbody>tr')
+//var s = new Sortable(tr)
+//s.delta = 0
+//s.horizon()
+//s.bind('td')
+
 var more = ['Python', 'C#', 'Lisp', 'Matlab', 'SQL', 'XML', 'HTML', 'LaTeX', 'Prolog']
 var p = document.querySelector('#languages')
 document.getElementById('add').addEventListener('click', function(){

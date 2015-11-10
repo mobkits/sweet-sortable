@@ -174,6 +174,7 @@ describe('move', function () {
   it('should works when move up and down several times', function () {
     append(3)
     var s = Sortable(ul)
+    s.bind('li')
     var li = ul.children[1]
     var t = Touch(li, {speed: 80})
     var pre = ul.textContent
@@ -182,9 +183,9 @@ describe('move', function () {
     }).then(function () {
       return t.moveUp(h, false)
     }).then(function () {
-      return t.moveDown(h, false)
+      return t.moveDown(h)
     }).then(function () {
-      return t.wait(300)
+      return t.wait(400)
     }).then(function () {
       assert.equal(s.dragging, false)
       assert.equal(pre, ul.textContent)
@@ -194,44 +195,55 @@ describe('move', function () {
 
 describe('horizon', function () {
   this.timeout(5000)
-  var w = 50
-  function appendHorizon(n) {
-    ul.style.height = '30px'
-    ul.style.width = '400px'
+  function createTable() {
+    var table = document.createElement('table')
+    table.appendChild(document.createElement('tbody'))
+    var tr = document.createElement('tr')
+    table.firstChild.appendChild(tr)
+    tr.style.width = '300px'
+    document.body.appendChild(table)
+    return tr
+  }
+
+  var w = 20
+  function appendHorizon(tr, n) {
     for(var i = 0; i < n; i ++) {
-      var li = document.createElement('li')
-      li.style.display = 'block'
-      li.style.padding = '0px'
-      li.style.margin = '0px'
-      li.style.float = 'left'
-      li.style.width = '50px'
-      li.textContent = i
-      ul.appendChild(li)
+      var td = document.createElement('td')
+      td.style.textAlign = 'center'
+      td.style.padding = '0px'
+      td.style.margin = '0px'
+      td.style.width = '20px'
+      td.style.height = '20px'
+      td.textContent = i
+      tr.appendChild(td)
     }
   }
 
   function moveMoment(count, index, angel, speed, dis) {
-    appendHorizon(count)
-    var s = Sortable(ul)
-    s.bind('li').horizon()
-    var li = ul.children[index]
-    var t = Touch(li, {speed: speed})
+    var tr = createTable()
+    appendHorizon(tr, count)
+    var s = Sortable(tr)
+    s.bind('td').horizon()
+    var td = tr.children[index]
+    var t = Touch(td, {speed: speed})
     return t.move(angel, w*dis).then(function () {
       // wait for end transition
       return t.wait(310)
+    }).then(function () {
+      return tr
     })
   }
 
   it('should move right and keep order', function () {
     var p = moveMoment(5, 0, 0, 200, 5)
-    return p.then(function () {
-      assert.equal(ul.textContent, '12340')
+    return p.then(function (tr) {
+      assert.equal(tr.textContent, '12340')
     })
   })
   it('should move left and keep order', function () {
     var p = moveMoment(5, 4, Math.PI, 200, 5)
-    return p.then(function () {
-      assert.equal(ul.textContent, '40123')
+    return p.then(function (tr) {
+      assert.equal(tr.textContent, '40123')
     })
   })
 })
