@@ -1,3 +1,9 @@
+# 0.1.6
+* fix e.target
+* fix delta option
+* alias unbind to remove function
+* add test
+
 # 0.1.5
 * fix init without new
 * bind MS IE touch events
