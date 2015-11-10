@@ -10,7 +10,6 @@ beforeEach(function () {
   ul.style.padding = '0px'
   ul.style.fontSize = '14px'
   ul.style.margin = '0px'
-  ul.style.overflow = 'hidden'
   var li = document.createElement('li')
   ul.appendChild(li)
   document.body.appendChild(ul)
@@ -197,14 +196,15 @@ describe('horizon', function () {
   this.timeout(5000)
   var w = 50
   function appendHorizon(n) {
+    ul.style.height = '30px'
+    ul.style.width = '400px'
     for(var i = 0; i < n; i ++) {
       var li = document.createElement('li')
+      li.style.display = 'block'
       li.style.padding = '0px'
       li.style.margin = '0px'
       li.style.float = 'left'
-      li.style.display = 'block'
       li.style.width = '50px'
-      li.style.textAlign = 'center'
       li.textContent = i
       ul.appendChild(li)
     }
