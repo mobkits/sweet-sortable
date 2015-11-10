@@ -1,3 +1,7 @@
+# 0.0.5
+* fix init without new
+* bind MS IE touch events
+
 # 0.0.4
 * bind touchend to document
 * bind touch and mouse events, remove touch detect
