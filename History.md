@@ -1,9 +1,13 @@
-# 1.0.3
+# 0.0.4
+* bind touchend to document
+* bind touch and mouse events, remove touch detect
+
+# 0.0.3
 * make delta configurable, default 10
 
-# 1.0.2
+# 0.0.2
 * fix translate function without had3d
 
-# 1.0.0 / 2015-10-10
+# 0.0.1
 * add npm support
 
