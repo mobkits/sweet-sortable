@@ -1,5 +1,8 @@
 # sweet-sortable
 
+[![Build Status](https://secure.travis-ci.org/chemzqm/sweet-sortable.svg)](http://travis-ci.org/chemzqm/sweet-sortable)
+[![Coverage Status](https://coveralls.io/repos/chemzqm/sweet-sortable/badge.svg?branch=master&service=github)](https://coveralls.io/github/chemzqm/sweet-sortable?branch=master)
+
   Make your element sortable with sweet animation of high performance.
 
   Works at least on ios safari, Mac Safari, Chrome, firefox, mobile chrome
