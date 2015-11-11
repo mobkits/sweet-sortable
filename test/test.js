@@ -173,23 +173,20 @@ describe('move', function () {
 
   it('should works when move up and down several times', function () {
     append(3)
-    var s = Sortable(ul)
+    var s = Sortable(ul, {delta: 5})
     s.bind('li')
     var li = ul.children[1]
-    var t = Touch(li, {speed: 80})
+    var t = Touch(li, {speed: 100})
     var pre = ul.textContent
-    return t.moveUp(h, false).then(function () {
-      return t.moveDown(h, false)
-    }).then(function () {
-      return t.moveUp(h, false)
-    }).then(function () {
-      return t.moveDown(h)
-    }).then(function () {
-      return t.wait(400)
-    }).then(function () {
-      assert.equal(s.dragging, false)
-      assert.equal(pre, ul.textContent)
-    })
+    return t.moveUp(h, false)
+          .moveDown(h, false)
+          .moveUp(h,false)
+          .moveDown(h)
+          .wait(800)
+          .then(function () {
+              assert.equal(s.dragging, false)
+              assert.equal(pre, ul.textContent)
+          })
   })
 })
 
