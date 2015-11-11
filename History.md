@@ -1,4 +1,7 @@
 # 0.1.7
+* use offsetWidth and offsetHeight
+
+# 0.1.7
 * fix horizon example
 
 # 0.1.6
