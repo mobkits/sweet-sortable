@@ -1,3 +1,6 @@
+# 0.1.7
+* fix horizon example
+
 # 0.1.6
 * fix e.target
 * fix delta option
