@@ -1,4 +1,7 @@
-# 0.1.7
+# 0.1.9
+* holder should be transparent
+
+# 0.1.8
 * use offsetWidth and offsetHeight
 
 # 0.1.7
