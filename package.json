@@ -2,7 +2,7 @@
   "name": "sweet-sortable",
   "version": "0.1.9",
   "description": "Make your element sortable with sweet animation of high performance.",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "make test-coveralls"
   },
