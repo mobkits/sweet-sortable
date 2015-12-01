@@ -1,3 +1,6 @@
+# 0.1.10
+* fix rerender problem on dragend
+
 # 0.1.9
 * holder should be transparent
 
