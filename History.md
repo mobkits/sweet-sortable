@@ -1,3 +1,6 @@
+# 0.1.12
+* works with absolute positioned element
+
 # 0.1.11
 * bind touch events even if no touch for testing
 
