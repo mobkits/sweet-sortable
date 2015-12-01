@@ -3,7 +3,7 @@ dev:
 	@webpack example/example.js example/bundle.js -w -d
 
 umd:
-	@webpack index.js build/sortable.js --output-library sortable --output-library-target umd
+	@webpack lib/index.js build/sortable.js --output-library sortable --output-library-target umd
 	@uglifyjs build/sortable.js > build/sortable.min.js
 
 test:
