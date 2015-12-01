@@ -42,9 +42,9 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/*!****************************!*\
-  !*** ./example/example.js ***!
-  \****************************/
+/*!********************!*\
+  !*** ./example.js ***!
+  \********************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var Sortable = __webpack_require__(/*! .. */ 1)
@@ -55,10 +55,19 @@
 	;[].slice.call(els).forEach(function(el){
 	  var sortable = new Sortable(el)
 	  if ('handle' == el.className) sortable.handle('span')
-	  if ('horizon' == el.className) sortable.horizon()
+	  if ('horizon' == el.className) {
+	    sortable.horizon()
+	    sortable.delta = 0
+	  }
 	  sortable.ignore('[disabled]')
 	  sortable.bind('li')
 	})
+	
+	//var tr = document.querySelector('tbody>tr')
+	//var s = new Sortable(tr)
+	//s.delta = 0
+	//s.horizon()
+	//s.bind('td')
 	
 	var more = ['Python', 'C#', 'Lisp', 'Matlab', 'SQL', 'XML', 'HTML', 'LaTeX', 'Prolog']
 	var p = document.querySelector('#languages')
@@ -76,43 +85,34 @@
 
 /***/ },
 /* 1 */
-/*!******************!*\
-  !*** ./index.js ***!
-  \******************/
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(/*! ./lib/index */ 2)
-
-
-/***/ },
-/* 2 */
-/*!**********************!*\
-  !*** ./lib/index.js ***!
-  \**********************/
+/*!***********************!*\
+  !*** ../lib/index.js ***!
+  \***********************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * dependencies
 	 */
 	
-	var emitter = __webpack_require__(/*! emitter */ 3)
-	var classes = __webpack_require__(/*! classes */ 4)
-	var events = __webpack_require__(/*! events */ 6)
-	var closest = __webpack_require__(/*! closest */ 9)
-	var event = __webpack_require__(/*! event */ 7)
-	var throttle = __webpack_require__(/*! per-frame */ 12)
-	var transform = __webpack_require__(/*! transform-property */ 14)
-	var util = __webpack_require__(/*! ./util */ 15)
-	var Animate = __webpack_require__(/*! ./animate */ 20)
-	var transition = __webpack_require__(/*! transition-property */ 18)
-	var transitionend = __webpack_require__(/*! transitionend-property */ 21)
+	var emitter = __webpack_require__(/*! emitter */ 2)
+	var classes = __webpack_require__(/*! classes */ 3)
+	var events = __webpack_require__(/*! events */ 5)
+	var closest = __webpack_require__(/*! closest */ 8)
+	var event = __webpack_require__(/*! event */ 6)
+	var throttle = __webpack_require__(/*! per-frame */ 11)
+	var transform = __webpack_require__(/*! transform-property */ 13)
+	var util = __webpack_require__(/*! ./util */ 14)
+	var Animate = __webpack_require__(/*! ./animate */ 19)
+	var transition = __webpack_require__(/*! transition-property */ 17)
+	var transitionend = __webpack_require__(/*! transitionend-property */ 20)
 	
-	var hasTouch = 'ontouchmove' in window
+	var hasTouch = 'ontouchend' in window
+	
 	/**
 	 * export `Sortable`
 	 */
 	
-	module.exports = Sortable;
+	module.exports = Sortable
 	
 	/**
 	 * Initialize `Sortable` with `el`.
@@ -120,20 +120,32 @@
 	 * @param {Element} el
 	 */
 	
-	function Sortable(el){
-	  if (!(this instanceof Sortable)) return new Sortable(el);
-	  if (!el) throw new TypeError('sortable(): expects an element');
+	function Sortable(el, opts){
+	  if (!(this instanceof Sortable)) return new Sortable(el, opts)
+	  if (!el) throw new TypeError('sortable(): expects an element')
+	  opts = opts || {}
+	  this.delta = opts.delta == null ? 10 : opts.delta
 	  this.el = el
 	  util.touchAction(el, 'none')
-	  this.events = events(el, this);
 	  this.pel = util.getRelativeElement(el)
+	  this.dragging = false
+	
+	  var h
+	  this.on('start', function () {
+	    h = el.style.height
+	    var ch = el.getBoundingClientRect().height || el.clientHeight
+	    el.style.height = ch + 'px'
+	  })
+	  this.on('end', function () {
+	    el.style.height = h
+	  })
 	}
 	
 	/**
 	 * Mixins.
 	 */
 	
-	emitter(Sortable.prototype);
+	emitter(Sortable.prototype)
 	
 	/**
 	 * Bind the draggable element selector
@@ -142,17 +154,28 @@
 	 * @api public
 	 */
 	Sortable.prototype.bind = function (selector){
-	  this.selector = selector || '';
+	  this.selector = selector || ''
+	  this.docEvents = events(document, this)
+	  this.events = events(this.el, this)
 	
-	  if (hasTouch) {
-	    this.events.bind('touchstart');
-	    this.events.bind('touchend');
-	    this.events.bind('touchmove');
-	  } else {
-	    this.events.bind('mousedown');
-	    this.events.bind('mouseup');
-	    this.events.bind('mousemove');
+	  this.events.bind('touchstart')
+	  this.events.bind('touchmove')
+	  this.events.bind('touchend')
+	  this.events.bind('touchcancel', 'ontouchend')
+	  this.docEvents.bind('touchend')
+	
+	  if (!hasTouch) {
+	    this.events.bind('mousedown', 'ontouchstart')
+	    this.events.bind('mousemove', 'ontouchmove')
+	    this.docEvents.bind('mouseup', 'ontouchend')
 	  }
+	
+	
+	  // MS IE touch events
+	  this.events.bind('PointerDown', 'ontouchstart')
+	  this.events.bind('PointerMove', 'ontouchmove')
+	  this.docEvents.bind('PointerUp', 'ontouchstart')
+	  return this
 	}
 	
 	/**
@@ -163,23 +186,13 @@
 	 * @api public
 	 */
 	Sortable.prototype.ignore = function(selector){
-	  this.ignored = selector;
-	  return this;
-	}
-	
-	/**
-	 * Set the max item count of this sortable
-	 *
-	 * @param {String} count
-	 * @api public
-	 */
-	Sortable.prototype.max = function(count){
-	  this.maxCount = count;
-	  return this;
+	  this.ignored = selector
+	  return this
 	}
 	
 	Sortable.prototype.horizon = function () {
 	  this.dir = 'horizon'
+	  return this
 	}
 	
 	/**
@@ -191,32 +204,33 @@
 	 */
 	
 	Sortable.prototype.handle = function(selector){
-	  this._handle = selector;
-	  return this;
+	  this._handle = selector
+	  return this
 	}
 	
-	Sortable.prototype.ontouchstart =
-	Sortable.prototype.onmousedown = function(e) {
+	Sortable.prototype.ontouchstart = function(e) {
 	  // ignore
 	  if (this.ignored && closest(e.target, this.ignored, this.el)) return
-	  var touch = util.getTouch(e)
-	  var node = this.findMatch(touch)
+	  var node = this.findMatch(e)
 	  // element to move
 	  if (node) node = util.matchAsChild(node, this.el)
 	  // not found
 	  if (node == null) return
 	  if (node === this.disabled) return
-	  e.preventDefault()
-	  e.stopImmediatePropagation()
+	  var touch = util.getTouch(e)
+	  if (this._handle) e.preventDefault()
 	  this.timer = setTimeout(function () {
 	    this.dragEl = node
 	    this.index = util.indexof(node)
+	    this.children = util.getChildElements(this.el)
 	    var pos = util.getAbsolutePosition(node, this.pel)
 	    // place holder
 	    var holder = this.holder = node.cloneNode(false)
 	    holder.removeAttribute('id')
 	    classes(holder).add('sortable-holder')
 	    util.copy(holder.style, {
+	      borderColor: 'rgba(255,255,255,0)',
+	      backgroundColor: 'rgba(255,255,255,0)',
 	      height: pos.height + 'px',
 	      width: pos.width + 'px'
 	    })
@@ -230,21 +244,20 @@
 	      width: pos.width + 'px',
 	      left: pos.left + 'px',
 	      top: pos.top + 'px',
+	      zIndex: 99,
 	      position: 'absolute'
 	    })
 	    this.el.insertBefore(holder, node)
-	    this.bindDocument()
 	    this.dragging = true
 	    this.animate = new Animate(this.pel, node, holder)
 	    this.emit('start')
 	  }.bind(this), 100)
-	  return false
 	}
 	
-	Sortable.prototype.ontouchmove =
-	Sortable.prototype.onmousemove = function(e) {
+	Sortable.prototype.ontouchmove = function(e) {
 	  if (this.dragEl == null || this.index == null) return
-	  if (hasTouch && e.changedTouches && e.changedTouches.length !== 1) return
+	  if (e.changedTouches && e.changedTouches.length !== 1) return
+	  if (e.defaultPrevented) return
 	  e.preventDefault()
 	  e.stopPropagation()
 	  var touch = util.getTouch(e)
@@ -273,14 +286,15 @@
 	  return false
 	}
 	
-	Sortable.prototype.ontouchend =
-	Sortable.prototype.onmouseup = function(e) {
+	Sortable.prototype.ontouchend = function() {
 	  this.reset()
 	}
 	
-	Sortable.prototype.remove = function() {
-	  this.events.unbind();
-	  this.off();
+	Sortable.prototype.remove =
+	Sortable.prototype.unbind = function() {
+	  this.events.unbind()
+	  this.docEvents.unbind()
+	  this.off()
 	}
 	
 	Sortable.prototype.findMatch = function(e){
@@ -295,27 +309,27 @@
 	var positionHolder = function (e, touchDir) {
 	  var d = this.dragEl
 	  if (d == null) return
-	  var delta = 10
+	  var delta = this.delta
 	  var rect = d.getBoundingClientRect()
-	  var x = rect.left + (rect.width || d.clientWidth)/2
-	  var y = rect.top + (rect.height || d.clientHeight)/2
-	  var h = this.holder
-	  var children = this.el.children
+	  var x = rect.left + rect.width/2
+	  var y = rect.top + rect.height/2
+	  var horizon = this.dir === 'horizon'
+	  var children = this.children
 	  for (var i = children.length - 1; i >= 0; i--) {
 	    var node = children[i]
-	    if (node === d || node === h) continue
+	    if (node === d) continue
 	    var pos = util.getPosition(x, y, node)
 	    if (!pos) continue
-	    if (this.dir === 'horizon') {
+	    if (horizon) {
 	      if (touchDir === 1 && pos.dx > - delta) {
 	        this.animate.animate(node, 3)
 	      } else if (touchDir === 3 && pos.dx < delta){
 	        this.animate.animate(node, 1)
 	      }
 	    } else {
-	      if (touchDir === 2 && pos.dy < delta) {
+	      if (touchDir === 2 && pos.dy <= delta) {
 	        this.animate.animate(node, 0)
-	      } else if (touchDir === 0 && pos.dy > -delta){
+	      } else if (touchDir === 0 && pos.dy >= -delta){
 	        this.animate.animate(node, 2)
 	      }
 	    }
@@ -333,13 +347,16 @@
 	 */
 	
 	Sortable.prototype.reset = function(){
-	  if (this.timer) clearTimeout(this.timer)
-	  if (!this.dragging) return
+	  if (this.timer) {
+	    clearTimeout(this.timer)
+	    this.timer = null
+	  }
+	  if (this.dragging === false) return
 	  this.dragging = false
-	  this.timer = null
 	  var p = this.el
 	  var el = this.dragEl
 	  var h = this.holder
+	  if (!h) return
 	  this.moveTo(h, function () {
 	    el.style[transform] = ''
 	    p.insertBefore(el, h)
@@ -350,30 +367,16 @@
 	      this.emit('update', el)
 	    }
 	    delete this.index
-	    this.animate = this.holder = this.dragEl = null
+	    this.children = this.animate = this.holder = this.dragEl = null
 	    this.emit('end')
 	  }.bind(this))
-	}
-	
-	
-	/**
-	 * Bind document event
-	 *
-	 * @api private
-	 */
-	Sortable.prototype.bindDocument = function () {
-	  var self = this
-	  var name = hasTouch ? 'touchend' : 'mouseup'
-	  event.bind(document, name, function reset() {
-	    event.unbind(document, name, reset)
-	    self.reset()
-	  })
 	}
 	
 	Sortable.prototype.moveTo = function (target, cb) {
 	  var el = this.dragEl
 	  this.disabled = el
-	  util.transitionDuration(el, 300)
+	  var duration = 320
+	  util.transitionDuration(el, duration, 'linear')
 	  var tx = this.tx || 0
 	  var ty = this.ty || 0
 	  var dis = this.getDistance(el, target, this.animate.dir)
@@ -387,12 +390,13 @@
 	    cb()
 	  }
 	  if (nomove) {
-	    fn()
+	    setTimeout(fn, duration)
 	  } else {
-	    event.bind(el, transitionend, function end() {
-	      event.unbind(el, transitionend, end);
+	    var end = function () {
+	      event.unbind(el, transitionend, end)
 	      fn()
-	    })
+	    }
+	    event.bind(el, transitionend, end)
 	    util.translate(el, x, y)
 	  }
 	}
@@ -417,10 +421,10 @@
 
 
 /***/ },
-/* 3 */
-/*!**************************************!*\
-  !*** ./~/component-emitter/index.js ***!
-  \**************************************/
+/* 2 */
+/*!***************************************!*\
+  !*** ../~/component-emitter/index.js ***!
+  \***************************************/
 /***/ function(module, exports) {
 
 	
@@ -587,17 +591,17 @@
 
 
 /***/ },
-/* 4 */
-/*!**************************************!*\
-  !*** ./~/component-classes/index.js ***!
-  \**************************************/
+/* 3 */
+/*!***************************************!*\
+  !*** ../~/component-classes/index.js ***!
+  \***************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * Module dependencies.
 	 */
 	
-	var index = __webpack_require__(/*! indexof */ 5);
+	var index = __webpack_require__(/*! indexof */ 4);
 	
 	/**
 	 * Whitespace regexp.
@@ -783,10 +787,10 @@
 
 
 /***/ },
-/* 5 */
-/*!**************************************!*\
-  !*** ./~/component-indexof/index.js ***!
-  \**************************************/
+/* 4 */
+/*!***************************************!*\
+  !*** ../~/component-indexof/index.js ***!
+  \***************************************/
 /***/ function(module, exports) {
 
 	module.exports = function(arr, obj){
@@ -798,10 +802,10 @@
 	};
 
 /***/ },
-/* 6 */
-/*!*************************************!*\
-  !*** ./~/component-events/index.js ***!
-  \*************************************/
+/* 5 */
+/*!**************************************!*\
+  !*** ../~/component-events/index.js ***!
+  \**************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -809,8 +813,8 @@
 	 * Module dependencies.
 	 */
 	
-	var events = __webpack_require__(/*! event */ 7);
-	var delegate = __webpack_require__(/*! delegate */ 8);
+	var events = __webpack_require__(/*! event */ 6);
+	var delegate = __webpack_require__(/*! delegate */ 7);
 	
 	/**
 	 * Expose `Events`.
@@ -983,10 +987,10 @@
 
 
 /***/ },
-/* 7 */
-/*!************************************!*\
-  !*** ./~/component-event/index.js ***!
-  \************************************/
+/* 6 */
+/*!*************************************!*\
+  !*** ../~/component-event/index.js ***!
+  \*************************************/
 /***/ function(module, exports) {
 
 	var bind = window.addEventListener ? 'addEventListener' : 'attachEvent',
@@ -1026,18 +1030,18 @@
 	};
 
 /***/ },
-/* 8 */
-/*!**********************************************************!*\
-  !*** ./~/component-events/~/component-delegate/index.js ***!
-  \**********************************************************/
+/* 7 */
+/*!***********************************************************!*\
+  !*** ../~/component-events/~/component-delegate/index.js ***!
+  \***********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * Module dependencies.
 	 */
 	
-	var closest = __webpack_require__(/*! closest */ 9)
-	  , event = __webpack_require__(/*! event */ 7);
+	var closest = __webpack_require__(/*! closest */ 8)
+	  , event = __webpack_require__(/*! event */ 6);
 	
 	/**
 	 * Delegate event `type` to `selector`
@@ -1077,17 +1081,17 @@
 
 
 /***/ },
-/* 9 */
-/*!**************************************!*\
-  !*** ./~/component-closest/index.js ***!
-  \**************************************/
+/* 8 */
+/*!***************************************!*\
+  !*** ../~/component-closest/index.js ***!
+  \***************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * Module Dependencies
 	 */
 	
-	var matches = __webpack_require__(/*! matches-selector */ 10)
+	var matches = __webpack_require__(/*! matches-selector */ 9)
 	
 	/**
 	 * Export `closest`
@@ -1118,17 +1122,17 @@
 
 
 /***/ },
-/* 10 */
-/*!***********************************************!*\
-  !*** ./~/component-matches-selector/index.js ***!
-  \***********************************************/
+/* 9 */
+/*!************************************************!*\
+  !*** ../~/component-matches-selector/index.js ***!
+  \************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * Module dependencies.
 	 */
 	
-	var query = __webpack_require__(/*! query */ 11);
+	var query = __webpack_require__(/*! query */ 10);
 	
 	/**
 	 * Element prototype.
@@ -1173,10 +1177,10 @@
 
 
 /***/ },
-/* 11 */
-/*!*****************************************************************!*\
-  !*** ./~/component-matches-selector/~/component-query/index.js ***!
-  \*****************************************************************/
+/* 10 */
+/*!******************************************************************!*\
+  !*** ../~/component-matches-selector/~/component-query/index.js ***!
+  \******************************************************************/
 /***/ function(module, exports) {
 
 	function one(selector, el) {
@@ -1203,17 +1207,17 @@
 
 
 /***/ },
-/* 12 */
-/*!******************************!*\
-  !*** ./~/per-frame/index.js ***!
-  \******************************/
+/* 11 */
+/*!*******************************!*\
+  !*** ../~/per-frame/index.js ***!
+  \*******************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * Module Dependencies.
 	 */
 	
-	var raf = __webpack_require__(/*! raf */ 13);
+	var raf = __webpack_require__(/*! raf */ 12);
 	
 	/**
 	 * Export `throttle`.
@@ -1249,10 +1253,10 @@
 
 
 /***/ },
-/* 13 */
-/*!**********************************************!*\
-  !*** ./~/per-frame/~/component-raf/index.js ***!
-  \**********************************************/
+/* 12 */
+/*!***********************************************!*\
+  !*** ../~/per-frame/~/component-raf/index.js ***!
+  \***********************************************/
 /***/ function(module, exports) {
 
 	/**
@@ -1292,10 +1296,10 @@
 
 
 /***/ },
-/* 14 */
-/*!***************************************!*\
-  !*** ./~/transform-property/index.js ***!
-  \***************************************/
+/* 13 */
+/*!****************************************!*\
+  !*** ../~/transform-property/index.js ***!
+  \****************************************/
 /***/ function(module, exports) {
 
 	
@@ -1320,17 +1324,17 @@
 
 
 /***/ },
-/* 15 */
-/*!*********************!*\
-  !*** ./lib/util.js ***!
-  \*********************/
+/* 14 */
+/*!**********************!*\
+  !*** ../lib/util.js ***!
+  \**********************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var styles = __webpack_require__(/*! computed-style */ 16)
-	var transform = __webpack_require__(/*! transform-property */ 14)
-	var has3d = __webpack_require__(/*! has-translate3d */ 17)
-	var transition = __webpack_require__(/*! transition-property */ 18)
-	var touchAction = __webpack_require__(/*! touchaction-property */ 19)
+	var styles = __webpack_require__(/*! computed-style */ 15)
+	var transform = __webpack_require__(/*! transform-property */ 13)
+	var has3d = __webpack_require__(/*! has-translate3d */ 16)
+	var transition = __webpack_require__(/*! transition-property */ 17)
+	var touchAction = __webpack_require__(/*! touchaction-property */ 18)
 	
 	/**
 	 * Get the child of topEl by element within a child
@@ -1345,7 +1349,6 @@
 	  do {
 	    if (el.parentNode === topEl) return el
 	    el = el.parentNode
-	    if (el === document.body) break
 	  } while(el)
 	}
 	
@@ -1361,8 +1364,8 @@
 	 */
 	exports.getPosition = function (x, y, el) {
 	  var rect = el.getBoundingClientRect()
-	  var w = rect.width || el.clientWidth
-	  var h = rect.height || el.clientHeight
+	  var w = rect.width || el.offsetWidth
+	  var h = rect.height || el.offsetHeight
 	  if (x > rect.left && x < rect.left + w && y > rect.top && y < rect.top + h) {
 	    return {
 	      dx: x - (rect.left + w/2),
@@ -1386,8 +1389,8 @@
 	  return {
 	    left: r.left - rect.left,
 	    top: r.top -rect.top,
-	    width: r.width || el.chientWidth,
-	    height: r.height || el.clientHeight
+	    width: r.width || el.offsetWidth,
+	    height: r.height || el.offsetHeight
 	  }
 	}
 	
@@ -1422,12 +1425,12 @@
 	 */
 	exports.getRelativeElement = function (el) {
 	  do {
+	    el = el.parentNode
 	    if (el === doc) return el
 	    var p = styles(el, 'position')
 	    if (p === 'absolute' || p === 'fixed' || p === 'relative') {
-	      return p
+	      return el
 	    }
-	    el = el.parentNode
 	  } while(el)
 	}
 	
@@ -1493,8 +1496,7 @@
 	  if (has3d) {
 	    s[transform] = 'translate3d(' + x + 'px,' + y + 'px, 0)'
 	  } else {
-	    s[transform] = 'translateX(' + x + 'px)'
-	    s[transform] = 'translateY(' + y + 'px)'
+	    s[transform] = 'translateX(' + x + 'px),translateY(' + y + 'px)'
 	  }
 	}
 	
@@ -1506,12 +1508,13 @@
 	 * @api public
 	 */
 	var prefix = transition.replace(/transition/i, '').toLowerCase()
-	exports.transitionDuration = function(el, ms){
+	exports.transitionDuration = function(el, ms, ease){
 	  var s = el.style;
+	  ease = ease || 'ease-in-out'
 	  if (!prefix) {
-	    s[transition] = ms + 'ms transform ease-in-out'
+	    s[transition] = ms + 'ms transform ' + ease
 	  } else {
-	    s[transition] = ms + 'ms -' + prefix + '-transform ease-in-out'
+	    s[transition] = ms + 'ms -' + prefix + '-transform ' + ease
 	  }
 	}
 	
@@ -1543,13 +1546,24 @@
 	  }
 	}
 	
+	exports.getChildElements = function (el) {
+	  var nodes = el.childNodes
+	  var arr = []
+	  for (var i = 0, l = nodes.length; i < l; i++) {
+	    var n = nodes[i]
+	    if (n.nodeType === 1) {
+	      arr.push(n)
+	    }
+	  }
+	  return arr
+	}
 
 
 /***/ },
-/* 16 */
-/*!*********************************************************!*\
-  !*** ./~/computed-style/dist/computedStyle.commonjs.js ***!
-  \*********************************************************/
+/* 15 */
+/*!**********************************************************!*\
+  !*** ../~/computed-style/dist/computedStyle.commonjs.js ***!
+  \**********************************************************/
 /***/ function(module, exports) {
 
 	// DEV: We don't use var but favor parameters since these play nicer with minification
@@ -1582,14 +1596,14 @@
 
 
 /***/ },
-/* 17 */
-/*!************************************!*\
-  !*** ./~/has-translate3d/index.js ***!
-  \************************************/
+/* 16 */
+/*!*************************************!*\
+  !*** ../~/has-translate3d/index.js ***!
+  \*************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	
-	var prop = __webpack_require__(/*! transform-property */ 14);
+	var prop = __webpack_require__(/*! transform-property */ 13);
 	
 	// IE <=8 doesn't have `getComputedStyle`
 	if (!prop || !window.getComputedStyle) {
@@ -1615,10 +1629,10 @@
 
 
 /***/ },
-/* 18 */
-/*!****************************************!*\
-  !*** ./~/transition-property/index.js ***!
-  \****************************************/
+/* 17 */
+/*!*****************************************!*\
+  !*** ../~/transition-property/index.js ***!
+  \*****************************************/
 /***/ function(module, exports) {
 
 	var styles = [
@@ -1644,10 +1658,10 @@
 
 
 /***/ },
-/* 19 */
-/*!*****************************************!*\
-  !*** ./~/touchaction-property/index.js ***!
-  \*****************************************/
+/* 18 */
+/*!******************************************!*\
+  !*** ../~/touchaction-property/index.js ***!
+  \******************************************/
 /***/ function(module, exports) {
 
 	
@@ -1673,25 +1687,25 @@
 
 
 /***/ },
-/* 20 */
-/*!************************!*\
-  !*** ./lib/animate.js ***!
-  \************************/
+/* 19 */
+/*!*************************!*\
+  !*** ../lib/animate.js ***!
+  \*************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(/*! ./util */ 15)
-	var transform = __webpack_require__(/*! transform-property */ 14)
-	var transition = __webpack_require__(/*! transition-property */ 18)
-	var transitionend = __webpack_require__(/*! transitionend-property */ 21)
-	var event = __webpack_require__(/*! event */ 7)
-	var uid = __webpack_require__(/*! uid */ 22)
+	var util = __webpack_require__(/*! ./util */ 14)
+	var transform = __webpack_require__(/*! transform-property */ 13)
+	var transition = __webpack_require__(/*! transition-property */ 17)
+	var transitionend = __webpack_require__(/*! transitionend-property */ 20)
+	var event = __webpack_require__(/*! event */ 6)
+	var uid = __webpack_require__(/*! uid */ 21)
 	
 	function Animate(pel, dragEl, holder) {
 	  var d = this.dragEl = dragEl
 	  var r = d.getBoundingClientRect()
 	  this.holder = holder
-	  this.dx = r.width || d.clientWidth
-	  this.dy = r.height || d.clientHeight
+	  this.dx = r.width || d.offsetWidth
+	  this.dy = r.height || d.offsetHeight
 	  this.pel = pel
 	  this.animates = {}
 	}
@@ -1723,7 +1737,7 @@
 	    }
 	  } else {
 	    o.transform = true
-	    util.transitionDuration(el, 300)
+	    util.transitionDuration(el, 280)
 	    this.animates[el.id] = o
 	    this.start(o, el, dir)
 	  }
@@ -1746,15 +1760,18 @@
 	Animate.prototype.start = function (o, el, dir) {
 	  var holder = this.holder
 	  var r = holder.getBoundingClientRect()
-	  var h = r.height || holder.clientHeight
-	  var w = r.width || holder.clientWidth
+	  var h = r.height || holder.offsetHeight
+	  var w = r.width || holder.offsetWidth
 	  var s = holder.style
-	  o.orig = util.makeAbsolute(el, this.pel)
+	  var orig = o.orig = util.makeAbsolute(el, this.pel)
+	  var isAbsolute = orig.position === 'absolute'
 	  // bigger the holder
-	  if (dir%2 === 0) {
-	    s.height = (h + this.dy) + 'px'
-	  } else {
-	    s.width = (w + this.dx) + 'px'
+	  if (!isAbsolute) {
+	    if (dir%2 === 0) {
+	      s.height = (h + this.dy) + 'px'
+	    } else {
+	      s.width = (w + this.dx) + 'px'
+	    }
 	  }
 	  var props = this.getTransformProperty(dir)
 	  // test if transition begin
@@ -1764,9 +1781,7 @@
 	Animate.prototype.transit = function (el, x, y, dir) {
 	  var holder = this.holder
 	  var s = holder.style
-	  util.translate(el, x, y)
-	  var next = this.next(el)
-	  var prev = this.prev(el)
+	  var p = el.parentNode
 	  var self = this
 	  var end = function () {
 	    event.unbind(el, transitionend, end);
@@ -1777,62 +1792,42 @@
 	    // reset el
 	    el.style[transition] = ''
 	    el.style[transform] = ''
-	    var p = el.parentNode
-	    if (o.transform) {
+	    var removed = !holder.parentNode
+	    if (!removed && o.transform && el.parentNode) {
 	      if (dir > 1) {
-	        if (prev) {
-	          util.insertAfter(el, prev)
-	        } else {
-	          var first = p.firstChild
-	          p.insertBefore(el, first)
-	        }
+	        util.insertAfter(holder, el)
 	      } else {
-	        if (next) {
-	          p.insertBefore(el, next)
-	        } else {
-	          p.appendChild(el)
-	        }
+	        el.parentNode.insertBefore(holder, el)
 	      }
 	    }
-	    util.copy(el.style, orig)
+	    var isAbsolute = orig.position === 'absolute'
+	    if (!isAbsolute) {
+	      util.copy(el.style, orig)
+	    }
+	    if (removed) return
 	    // reset holder
 	    var rect = holder.getBoundingClientRect()
 	    if (dir%2 === 0) {
-	      s.height = ((rect.height || holder.clientHeight) - self.dy) + 'px'
+	      var dy = isAbsolute ? 0 : self.dy
+	      s.height = ((rect.height || holder.offsetHeight) - dy) + 'px'
 	    } else {
-	      s.width = ((rect.width || holder.clientWidth) - self.dx) + 'px'
+	      var dx = isAbsolute ? 0 : self.dx
+	      s.width = ((rect.width || holder.offsetWidth) - dx) + 'px'
 	    }
 	  }
 	  event.bind(el, transitionend, end)
+	  util.translate(el, x, y)
 	  return end
-	}
-	
-	Animate.prototype.prev = function (el) {
-	  do {
-	    el = el.previousSibling
-	    if (el === this.dragEl || el === this.holder) continue
-	    if (el && el.nodeType === 1) return el
-	  } while (el)
-	  return null
-	}
-	
-	Animate.prototype.next = function (el) {
-	  do {
-	    el = el.nextSibling
-	    if (el === this.dragEl || el === this.holder) continue
-	    if (el && el.nodeType === 1) return el
-	  } while (el)
-	  return null
 	}
 	
 	module.exports = Animate
 
 
 /***/ },
-/* 21 */
-/*!*******************************************!*\
-  !*** ./~/transitionend-property/index.js ***!
-  \*******************************************/
+/* 20 */
+/*!********************************************!*\
+  !*** ../~/transitionend-property/index.js ***!
+  \********************************************/
 /***/ function(module, exports) {
 
 	/**
@@ -1862,10 +1857,10 @@
 
 
 /***/ },
-/* 22 */
-/*!************************!*\
-  !*** ./~/uid/index.js ***!
-  \************************/
+/* 21 */
+/*!*************************!*\
+  !*** ../~/uid/index.js ***!
+  \*************************/
 /***/ function(module, exports) {
 
 	/**
