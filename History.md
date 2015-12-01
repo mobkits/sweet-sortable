@@ -1,3 +1,6 @@
+# 0.1.13
+* transparent border for holder
+
 # 0.1.12
 * works with absolute positioned element
 
