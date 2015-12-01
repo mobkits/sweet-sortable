@@ -1,3 +1,6 @@
+# 0.1.11
+* bind touch events even if no touch for testing
+
 # 0.1.10
 * fix rerender problem on dragend
 
