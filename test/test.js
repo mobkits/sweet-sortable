@@ -225,7 +225,7 @@ describe('horizon', function () {
     var t = Touch(td, {speed: speed})
     return t.move(angel, w*dis).then(function () {
       // wait for end transition
-      return t.wait(310)
+      return t.wait(800)
     }).then(function () {
       return tr
     })
