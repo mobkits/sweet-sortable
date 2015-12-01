@@ -1,3 +1,6 @@
+# 0.1.14
+* fix getRelativeElement
+
 # 0.1.13
 * transparent border for holder
 
