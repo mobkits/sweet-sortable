@@ -1,3 +1,6 @@
+# 0.1.15
+* fix not works on browser not support `transition` as transition property
+
 # 0.1.14
 * fix getRelativeElement
 
