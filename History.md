@@ -1,3 +1,6 @@
+# 0.1.16
+* fix on high move speed element not moved correctly
+
 # 0.1.15
 * fix not works on browser not support `transition` as transition property
 
