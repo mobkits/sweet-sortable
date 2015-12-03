@@ -42,9 +42,9 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/*!********************!*\
-  !*** ./example.js ***!
-  \********************/
+/*!****************************!*\
+  !*** ./example/example.js ***!
+  \****************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var Sortable = __webpack_require__(/*! .. */ 1)
@@ -85,9 +85,9 @@
 
 /***/ },
 /* 1 */
-/*!***********************!*\
-  !*** ../lib/index.js ***!
-  \***********************/
+/*!**********************!*\
+  !*** ./lib/index.js ***!
+  \**********************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -280,9 +280,7 @@
 	    touchDir = dy > 0 ? 0 : 2
 	    if (dy === 0) return
 	  }
-	  if (util.getPosition(touch.clientX, touch.clientY, this.el)) {
-	    this.positionHolder(touch, touchDir)
-	  }
+	  this.positionHolder(touch, touchDir)
 	  return false
 	}
 	
@@ -379,10 +377,18 @@
 	  util.transitionDuration(el, duration, 'linear')
 	  var tx = this.tx || 0
 	  var ty = this.ty || 0
-	  var dis = this.getDistance(el, target, this.animate.dir)
+	  var dir = this.animate.dir
+	  if (!dir) {
+	    if (this.dir === 'horizon') {
+	      dir = tx > 0 ? 1 : 3
+	    } else {
+	      dir = ty > 0 ? 2 : 0
+	    }
+	  }
+	  var dis = this.getDistance(el, target, dir)
 	  var x = tx + dis.x
 	  var y = ty + dis.y
-	  var nomove = (dis.x ===0 && dis.y === 0)
+	  var nomove = (dis.x ==0 && dis.y === 0)
 	  var self = this
 	  var fn = function () {
 	    el.style[transition] = ''
@@ -422,9 +428,9 @@
 
 /***/ },
 /* 2 */
-/*!***************************************!*\
-  !*** ../~/component-emitter/index.js ***!
-  \***************************************/
+/*!**************************************!*\
+  !*** ./~/component-emitter/index.js ***!
+  \**************************************/
 /***/ function(module, exports) {
 
 	
@@ -592,9 +598,9 @@
 
 /***/ },
 /* 3 */
-/*!***************************************!*\
-  !*** ../~/component-classes/index.js ***!
-  \***************************************/
+/*!**************************************!*\
+  !*** ./~/component-classes/index.js ***!
+  \**************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -788,9 +794,9 @@
 
 /***/ },
 /* 4 */
-/*!***************************************!*\
-  !*** ../~/component-indexof/index.js ***!
-  \***************************************/
+/*!**************************************!*\
+  !*** ./~/component-indexof/index.js ***!
+  \**************************************/
 /***/ function(module, exports) {
 
 	module.exports = function(arr, obj){
@@ -803,9 +809,9 @@
 
 /***/ },
 /* 5 */
-/*!**************************************!*\
-  !*** ../~/component-events/index.js ***!
-  \**************************************/
+/*!*************************************!*\
+  !*** ./~/component-events/index.js ***!
+  \*************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -988,9 +994,9 @@
 
 /***/ },
 /* 6 */
-/*!*************************************!*\
-  !*** ../~/component-event/index.js ***!
-  \*************************************/
+/*!************************************!*\
+  !*** ./~/component-event/index.js ***!
+  \************************************/
 /***/ function(module, exports) {
 
 	var bind = window.addEventListener ? 'addEventListener' : 'attachEvent',
@@ -1031,9 +1037,9 @@
 
 /***/ },
 /* 7 */
-/*!***********************************************************!*\
-  !*** ../~/component-events/~/component-delegate/index.js ***!
-  \***********************************************************/
+/*!**********************************************************!*\
+  !*** ./~/component-events/~/component-delegate/index.js ***!
+  \**********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1082,9 +1088,9 @@
 
 /***/ },
 /* 8 */
-/*!***************************************!*\
-  !*** ../~/component-closest/index.js ***!
-  \***************************************/
+/*!**************************************!*\
+  !*** ./~/component-closest/index.js ***!
+  \**************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1123,9 +1129,9 @@
 
 /***/ },
 /* 9 */
-/*!************************************************!*\
-  !*** ../~/component-matches-selector/index.js ***!
-  \************************************************/
+/*!***********************************************!*\
+  !*** ./~/component-matches-selector/index.js ***!
+  \***********************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1178,9 +1184,9 @@
 
 /***/ },
 /* 10 */
-/*!******************************************************************!*\
-  !*** ../~/component-matches-selector/~/component-query/index.js ***!
-  \******************************************************************/
+/*!*****************************************************************!*\
+  !*** ./~/component-matches-selector/~/component-query/index.js ***!
+  \*****************************************************************/
 /***/ function(module, exports) {
 
 	function one(selector, el) {
@@ -1208,9 +1214,9 @@
 
 /***/ },
 /* 11 */
-/*!*******************************!*\
-  !*** ../~/per-frame/index.js ***!
-  \*******************************/
+/*!******************************!*\
+  !*** ./~/per-frame/index.js ***!
+  \******************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1254,9 +1260,9 @@
 
 /***/ },
 /* 12 */
-/*!***********************************************!*\
-  !*** ../~/per-frame/~/component-raf/index.js ***!
-  \***********************************************/
+/*!**********************************************!*\
+  !*** ./~/per-frame/~/component-raf/index.js ***!
+  \**********************************************/
 /***/ function(module, exports) {
 
 	/**
@@ -1297,9 +1303,9 @@
 
 /***/ },
 /* 13 */
-/*!****************************************!*\
-  !*** ../~/transform-property/index.js ***!
-  \****************************************/
+/*!***************************************!*\
+  !*** ./~/transform-property/index.js ***!
+  \***************************************/
 /***/ function(module, exports) {
 
 	
@@ -1325,9 +1331,9 @@
 
 /***/ },
 /* 14 */
-/*!**********************!*\
-  !*** ../lib/util.js ***!
-  \**********************/
+/*!*********************!*\
+  !*** ./lib/util.js ***!
+  \*********************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var styles = __webpack_require__(/*! computed-style */ 15)
@@ -1424,14 +1430,14 @@
 	 * @api public
 	 */
 	exports.getRelativeElement = function (el) {
-	  do {
-	    el = el.parentNode
+	  while(el) {
 	    if (el === doc) return el
 	    var p = styles(el, 'position')
 	    if (p === 'absolute' || p === 'fixed' || p === 'relative') {
 	      return el
 	    }
-	  } while(el)
+	    el = el.parentNode
+	  }
 	}
 	
 	/**
@@ -1561,9 +1567,9 @@
 
 /***/ },
 /* 15 */
-/*!**********************************************************!*\
-  !*** ../~/computed-style/dist/computedStyle.commonjs.js ***!
-  \**********************************************************/
+/*!*********************************************************!*\
+  !*** ./~/computed-style/dist/computedStyle.commonjs.js ***!
+  \*********************************************************/
 /***/ function(module, exports) {
 
 	// DEV: We don't use var but favor parameters since these play nicer with minification
@@ -1597,9 +1603,9 @@
 
 /***/ },
 /* 16 */
-/*!*************************************!*\
-  !*** ../~/has-translate3d/index.js ***!
-  \*************************************/
+/*!************************************!*\
+  !*** ./~/has-translate3d/index.js ***!
+  \************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -1630,17 +1636,17 @@
 
 /***/ },
 /* 17 */
-/*!*****************************************!*\
-  !*** ../~/transition-property/index.js ***!
-  \*****************************************/
+/*!****************************************!*\
+  !*** ./~/transition-property/index.js ***!
+  \****************************************/
 /***/ function(module, exports) {
 
 	var styles = [
-	  'transition',
 	  'webkitTransition',
 	  'MozTransition',
 	  'OTransition',
-	  'msTransition'
+	  'msTransition',
+	  'transition'
 	]
 	
 	var el = document.createElement('p')
@@ -1659,9 +1665,9 @@
 
 /***/ },
 /* 18 */
-/*!******************************************!*\
-  !*** ../~/touchaction-property/index.js ***!
-  \******************************************/
+/*!*****************************************!*\
+  !*** ./~/touchaction-property/index.js ***!
+  \*****************************************/
 /***/ function(module, exports) {
 
 	
@@ -1688,9 +1694,9 @@
 
 /***/ },
 /* 19 */
-/*!*************************!*\
-  !*** ../lib/animate.js ***!
-  \*************************/
+/*!************************!*\
+  !*** ./lib/animate.js ***!
+  \************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(/*! ./util */ 14)
@@ -1763,15 +1769,12 @@
 	  var h = r.height || holder.offsetHeight
 	  var w = r.width || holder.offsetWidth
 	  var s = holder.style
-	  var orig = o.orig = util.makeAbsolute(el, this.pel)
-	  var isAbsolute = orig.position === 'absolute'
+	  o.orig = util.makeAbsolute(el, this.pel)
 	  // bigger the holder
-	  if (!isAbsolute) {
-	    if (dir%2 === 0) {
-	      s.height = (h + this.dy) + 'px'
-	    } else {
-	      s.width = (w + this.dx) + 'px'
-	    }
+	  if (dir%2 === 0) {
+	    s.height = (h + this.dy) + 'px'
+	  } else {
+	    s.width = (w + this.dx) + 'px'
 	  }
 	  var props = this.getTransformProperty(dir)
 	  // test if transition begin
@@ -1781,7 +1784,6 @@
 	Animate.prototype.transit = function (el, x, y, dir) {
 	  var holder = this.holder
 	  var s = holder.style
-	  var p = el.parentNode
 	  var self = this
 	  var end = function () {
 	    event.unbind(el, transitionend, end);
@@ -1800,19 +1802,14 @@
 	        el.parentNode.insertBefore(holder, el)
 	      }
 	    }
-	    var isAbsolute = orig.position === 'absolute'
-	    if (!isAbsolute) {
-	      util.copy(el.style, orig)
-	    }
+	    util.copy(el.style, orig)
 	    if (removed) return
 	    // reset holder
 	    var rect = holder.getBoundingClientRect()
 	    if (dir%2 === 0) {
-	      var dy = isAbsolute ? 0 : self.dy
-	      s.height = ((rect.height || holder.offsetHeight) - dy) + 'px'
+	      s.height = ((rect.height || holder.offsetHeight) - self.dy) + 'px'
 	    } else {
-	      var dx = isAbsolute ? 0 : self.dx
-	      s.width = ((rect.width || holder.offsetWidth) - dx) + 'px'
+	      s.width = ((rect.width || holder.offsetWidth) - self.dx) + 'px'
 	    }
 	  }
 	  event.bind(el, transitionend, end)
@@ -1825,9 +1822,9 @@
 
 /***/ },
 /* 20 */
-/*!********************************************!*\
-  !*** ../~/transitionend-property/index.js ***!
-  \********************************************/
+/*!*******************************************!*\
+  !*** ./~/transitionend-property/index.js ***!
+  \*******************************************/
 /***/ function(module, exports) {
 
 	/**
@@ -1858,9 +1855,9 @@
 
 /***/ },
 /* 21 */
-/*!*************************!*\
-  !*** ../~/uid/index.js ***!
-  \*************************/
+/*!************************!*\
+  !*** ./~/uid/index.js ***!
+  \************************/
 /***/ function(module, exports) {
 
 	/**
