@@ -1,7 +1,9 @@
 # sweet-sortable
 
-[![Build Status](https://secure.travis-ci.org/chemzqm/sweet-sortable.svg)](http://travis-ci.org/chemzqm/sweet-sortable)
-[![Coverage Status](https://coveralls.io/repos/chemzqm/sweet-sortable/badge.svg?branch=master&service=github)](https://coveralls.io/github/chemzqm/sweet-sortable?branch=master)
+[![NPM version](https://img.shields.io/npm/v/sweet-sortable.svg?style=flat-square)](https://www.npmjs.com/package/sweet-sortable)
+[![Build Status](https://img.shields.io/travis/chemzqm/sweet-sortable/master.svg?style=flat-square)](http://travis-ci.org/chemzqm/sweet-sortable)
+[![Coverage Status](https://img.shields.io/coveralls/chemzqm/sweet-sortable/master.svg?style=flat-square)](https://coveralls.io/github/chemzqm/sweet-sortable?branch=master)
+[![Dependency Status](https://img.shields.io/david/chemzqm/sweet-sortable.svg?style=flat-square)](https://david-dm.org/chemzqm/sweet-sortable)
 
   Make your element sortable with sweet animation of high performance.
 
