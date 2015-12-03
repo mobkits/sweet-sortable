@@ -1,3 +1,6 @@
+# 0.1.17
+* new badge
+
 # 0.1.16
 * fix on high move speed element not moved correctly
 
