@@ -31,7 +31,6 @@
 }
 ```
 * Only horizon and vertical sort supportted
-* ss transition property should **not** exist on dragging elements style attribute (set via css is fine)
 * No connect support right now
 
 ## Installation
