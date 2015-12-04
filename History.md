@@ -1,3 +1,7 @@
+# 0.1.18
+* improve check for touchmove
+* code refactor
+
 # 0.1.17
 * new badge
 
