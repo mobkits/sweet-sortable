@@ -19,7 +19,7 @@
 * Support mobile and desktop
 * Handler element and disabled element can be set be css selector
 * Not using html5 D&D, you can style dragging element by css
-* Children can dynamic added or removed from list
+* Children can dynamic added or removed from list, even during dragging
 * ~4k when minified and gzip (umd version)
 
 ## Limitation
