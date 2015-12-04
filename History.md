@@ -1,3 +1,6 @@
+# 0.2.0
+* support sort uneven elements
+
 # 0.1.20
 * fix drag element possible incorrect
 
