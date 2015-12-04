@@ -1,3 +1,6 @@
+# 0.1.19
+* reset if touchmove lost target
+
 # 0.1.18
 * improve check for touchmove
 * code refactor
