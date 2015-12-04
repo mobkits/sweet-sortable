@@ -1,3 +1,6 @@
+# 0.1.20
+* fix drag element possible incorrect
+
 # 0.1.19
 * reset if touchmove lost target
 
