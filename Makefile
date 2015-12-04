@@ -1,6 +1,5 @@
 dev:
-	@open example/index.html
-	@webpack example/example.js example/bundle.js -w -d
+	@webpack example/connect.js example/connect.bundle.js -w -d
 
 umd:
 	@webpack lib/index.js build/sortable.js --output-library sortable --output-library-target umd
