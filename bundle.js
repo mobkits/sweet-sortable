@@ -174,7 +174,7 @@
 	  // MS IE touch events
 	  this.events.bind('PointerDown', 'ontouchstart')
 	  this.events.bind('PointerMove', 'ontouchmove')
-	  this.docEvents.bind('PointerUp', 'ontouchstart')
+	  this.docEvents.bind('PointerUp', 'ontouchend')
 	  return this
 	}
 	
@@ -252,7 +252,7 @@
 	Sortable.prototype.ontouchmove = function(e) {
 	  if (this.mouseStart == null) return
 	  if (e.changedTouches && e.changedTouches.length !== 1) return
-	  var node = this.findDelegate(e)
+	  var el = this.dragEl
 	  e.preventDefault()
 	  e.stopPropagation()
 	  var touch = util.getTouch(e)
@@ -262,17 +262,17 @@
 	    if (dx === 0) return
 	    touchDir = dx > 0 ? 1 : 3
 	    this.tx = touch.clientX - this.mouseStart.x
-	    util.translate(node, this.tx, 0)
+	    util.translate(el, this.tx, 0)
 	  } else {
 	    var dy = touch.clientY - this.y
 	    if (dy === 0) return
 	    touchDir = dy > 0 ? 0 : 2
 	    this.ty = touch.clientY - this.mouseStart.y
-	    util.translate(node, 0, this.ty)
+	    util.translate(el, 0, this.ty)
 	  }
 	  this.x = touch.clientX
 	  this.y = touch.clientY
-	  this.positionHolder(touchDir)
+	  this.positionHolder(touch, touchDir)
 	  return false
 	}
 	
@@ -300,14 +300,13 @@
 	  return util.matchAsChild(el, this.el)
 	}
 	
-	var positionHolder = function (touchDir) {
+	var positionHolder = function (e, touchDir) {
 	  var d = this.dragEl
 	  if (d == null) return
 	  var delta = this.delta
 	  var rect = d.getBoundingClientRect()
 	  var x = rect.left + rect.width/2
 	  var y = rect.top + rect.height/2
-	  this.emit('move', x, y, touchDir)
 	  var horizon = this.dir === 'horizon'
 	  var holder = this.holder
 	  var last = this.last || holder
@@ -366,14 +365,12 @@
 	  // make sure called once
 	  if (this.mouseStart == null) return
 	  this.mouseStart = null
-	  this.emit('reset')
 	  var el = this.dragEl
 	  var h = this.holder
-	  var transProp = el.style[transition]
 	  this.moveTo(el, h, function () {
 	    // performance better
 	    el.style[transform] = ''
-	    el.style[transition] = transProp
+	    el.style[transition] = ''
 	    if (el.parentNode) {
 	      el.parentNode.insertBefore(el, h)
 	    }
@@ -419,40 +416,6 @@
 	    event.bind(el, transitionend, end)
 	    util.translate(el, x, y)
 	  }
-	}
-	
-	Sortable.prototype.connect = function (sortable) {
-	  var self = this
-	  sortable.on('start', function () {
-	    self.dragging = true
-	    self.orig = sortable.orig
-	    self.dragEl = sortable.dragEl
-	    var holder = self.holder = sortable.holder.cloneNode(true)
-	    self.animate = new Animate(self.pel, self.dragEl, holder)
-	  })
-	  sortable.on('move', function (e, x, y ,dir) {
-	    var p = self.holder.parentNode
-	    var el = util.locateNode(self.el, x, y, dir)
-	    if (!p && el) {
-	      if (dir < 2) {
-	        self.el.insertBefore(self.holder, el)
-	      } else {
-	        util.insertAfter(self.holder, el)
-	      }
-	      return
-	    }
-	    if (el) {
-	      self.positionHolder(dir)
-	    } else {
-	      self.el.removeChild(self.holder)
-	    }
-	  })
-	  sortable.on('reset', function () {
-	    self.dragging = false
-	  })
-	  sortable.on('end', function () {
-	    self.animate = self.holder = self.dragEl = null
-	  })
 	}
 
 
@@ -1576,27 +1539,6 @@
 	    s[touchAction] = value;
 	  }
 	}
-	
-	exports.locateNode = function (parentNode, x, y, dir) {
-	  var rightDown = dir < 2
-	  var horizon = dir%2 === 1
-	  var node = rightDown ? parentNode.firstChild : parentNode.lastChild
-	  var prop = rightDown < 2 ? 'nextSibling': 'previousSibling'
-	  while(node) {
-	    if (node.nodeType !== 1) {
-	      node = node[prop]
-	      continue
-	    }
-	    var r = node.getBoundingClientRect()
-	    if (dir === 0 && y < r.top) break
-	    if (dir === 1 && x < r.left) break
-	    if (dir === 2 && y > r.bottom) break
-	    if (dir === 3 && x > r.right) break
-	    if (horizon && x > r.left && x < r.right) return node
-	    if (!horizon && y > r.top && y < r.bottom) return node
-	    node = node[prop]
-	  }
-	}
 
 
 /***/ },
@@ -1741,11 +1683,10 @@
 	var uid = __webpack_require__(/*! uid */ 21)
 	
 	function Animate(pel, dragEl, holder) {
-	  var d = dragEl
-	  var r = dragEl.getBoundingClientRect()
+	  this.dragEl = dragEl
 	  this.holder = holder
-	  this.dx = r.width
-	  this.dy = r.height
+	  this.width = parseInt(holder.style.width, 10)
+	  this.height = parseInt(holder.style.height, 10)
 	  this.pel = pel
 	  this.animates = {}
 	}
@@ -1772,7 +1713,7 @@
 	      this.transit(el, 0, 0, dir)
 	    } else {
 	      o.transform = true
-	      var props = this.getTransformProperty(dir)
+	      var props = this.getTransformProperty(dir, o.width, o.height)
 	      this.transit(el, props.x, props.y, dir)
 	    }
 	  } else {
@@ -1783,34 +1724,30 @@
 	  }
 	}
 	
-	Animate.prototype.getTransformProperty = function (dir) {
-	  var x
-	  var y
+	Animate.prototype.getTransformProperty = function (dir, w, h) {
+	  var o = {x: 0, y: 0}
 	  if (dir%2 === 0) {
-	    y = dir > 1 ? - this.dy : this.dy
+	    o.y = dir > 1 ? - h : h
 	  } else {
-	    x = dir > 1 ? - this.dx : this.dx
+	    o.x = dir > 1 ? - w : w
 	  }
-	  return {
-	    x: x,
-	    y: y
-	  }
+	  return o
 	}
 	
 	Animate.prototype.start = function (o, el, dir) {
 	  var holder = this.holder
-	  var r = holder.getBoundingClientRect()
-	  var h = r.height
-	  var w = r.width
-	  var s = holder.style
+	  var rect = holder.getBoundingClientRect()
+	  var r = el.getBoundingClientRect()
+	  var w = o.width = r.width
+	  var h = o.height = r.height
 	  o.orig = util.makeAbsolute(el, this.pel)
 	  // bigger the holder
 	  if (dir%2 === 0) {
-	    s.height = (h + this.dy) + 'px'
+	    holder.style.height = (rect.height + h) + 'px'
 	  } else {
-	    s.width = (w + this.dx) + 'px'
+	    holder.style.width = (rect.width + w) + 'px'
 	  }
-	  var props = this.getTransformProperty(dir)
+	  var props = this.getTransformProperty(dir, w, h)
 	  // test if transition begin
 	  o.end = this.transit(el, props.x, props.y, dir)
 	}
@@ -1840,9 +1777,11 @@
 	    // reset holder
 	    var rect = holder.getBoundingClientRect()
 	    if (dir%2 === 0) {
-	      s.height = (rect.height - self.dy) + 'px'
+	      var h = Math.max(self.height, rect.height - o.height)
+	      s.height = h + 'px'
 	    } else {
-	      s.width = (rect.width - self.dx) + 'px'
+	      var w = Math.max(self.width, rect.width - o.width)
+	      s.width = w + 'px'
 	    }
 	    self.animates[el.id] = null
 	  }
