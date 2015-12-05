@@ -95,13 +95,14 @@ Set the handle to `selector`.
 
 Connect to another Sortable instance, two way connect is possible
 
+__Notice__ not realy stable yet
+
 #### .unbind()
 
 Unbind all the event listeners.
 
 ## License
 
-Sweet-sortable, make elements sortable with sweet animation
 Copyright © 2015 chemzqm@gmail.com
 
 Permission is hereby granted, free of charge, to any person obtaining
