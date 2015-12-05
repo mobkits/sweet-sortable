@@ -245,6 +245,55 @@ describe('horizon', function () {
   })
 })
 
+describe('.connect()', function () {
+  var two
+  this.timeout(5000)
+  beforeEach(function () {
+    var el = document.createElement('ul')
+    el.style.padding = '0px'
+    el.style.fontSize = '14px'
+    el.style.margin = '20px 0px'
+    document.body.appendChild(el)
+    two = Sortable(el)
+    var li = document.createElement('li')
+    li.textContent = 'a'
+    el.appendChild(li)
+    two.bind('li')
+  })
+
+  afterEach(function () {
+    two.unbind()
+    document.body.removeChild(two.el)
+  })
+
+  it('should one way connect', function () {
+    var one = Sortable(ul)
+    one.bind('li')
+    append(5)
+    two.connect(one)
+    var el = ul.querySelector('li:last-child')
+    var t = new Touch(el)
+    t.speed(80)
+    return t.moveDown(40).wait(400).then(function () {
+      assert.equal(el.parentNode, two.el)
+    })
+  })
+
+  it('should connect to each other', function () {
+    var one = Sortable(ul)
+    one.bind('li')
+    append(5)
+    two.connect(one)
+    one.connect(two)
+    var el = ul.querySelector('li:last-child')
+    var t = new Touch(el)
+    t.speed(80)
+    return t.moveDown(40).wait(400).then(function () {
+      assert.equal(el.parentNode, two.el)
+    })
+  })
+})
+
 describe('.remove()', function () {
   it('should unbind all events', function () {
     var fired

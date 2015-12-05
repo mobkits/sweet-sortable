@@ -1,5 +1,5 @@
 dev:
-	@webpack example/connect.js example/connect.bundle.js -w -d
+	@webpack example/example.js example/bundle.js -w -d
 
 umd:
 	@webpack lib/index.js build/sortable.js --output-library sortable --output-library-target umd
@@ -7,7 +7,7 @@ umd:
 
 test:
 	@open http://localhost:8080/bundle
-	@webpack-dev-server 'mocha!./test/test.js' --inline --hot
+	@webpack-dev-server 'mocha!./test/test.js' --inline --hot -d
 
 test-karma:
 	@node_modules/.bin/karma start --single-run
