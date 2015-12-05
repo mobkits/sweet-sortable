@@ -19,7 +19,7 @@
 * Support mobile and desktop
 * Handler element and disabled element can be set be css selector
 * Not using html5 D&D, you can style dragging element by css
-* Children can dynamic added or removed from list, even during dragging
+* Children can dynamic added or removed from list
 * ~4k when minified and gzip (umd version)
 
 ## Limitation
@@ -91,13 +91,18 @@ Ignore items matching the given `selector`.
 
 Set the handle to `selector`.
 
-#### .remove()
+#### .connect(Sortable)
+
+Connect to another Sortable instance, two way connect is possible
+
+__Notice__ not realy stable yet
+
+#### .unbind()
 
 Unbind all the event listeners.
 
 ## License
 
-Sweet-sortable, make elements sortable with sweet animation
 Copyright © 2015 chemzqm@gmail.com
 
 Permission is hereby granted, free of charge, to any person obtaining

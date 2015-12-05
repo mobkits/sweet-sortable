@@ -32,3 +32,10 @@ document.getElementById('remove').addEventListener('click', function(){
     var n = p.firstElementChild
     p.removeChild(n)
 }, false)
+
+var one = Sortable(document.querySelector('#connect .private'))
+one.bind('li')
+var two = Sortable(document.querySelector('#connect .public'))
+two.bind('li')
+one.connect(two)
+two.connect(one)
