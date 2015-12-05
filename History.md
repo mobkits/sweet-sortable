@@ -1,3 +1,6 @@
+# 0.3.0
+* add connect feature
+
 # 0.2.0
 * support sort uneven elements
 
