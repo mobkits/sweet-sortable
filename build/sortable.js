@@ -69,6 +69,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Animate = __webpack_require__(18)
 	var transition = __webpack_require__(16)
 	var transitionend = __webpack_require__(19)
+	var raf = __webpack_require__(21)
 
 	var hasTouch = 'ontouchend' in window
 
@@ -88,7 +89,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if (!(this instanceof Sortable)) return new Sortable(el, opts)
 	  if (!el) throw new TypeError('sortable(): expects an element')
 	  opts = opts || {}
-	  this.delta = opts.delta == null ? 10 : opts.delta
+	  this.delta = opts.delta == null ? 15 : opts.delta
+	  this.duration = opts.duration || 330
 	  this.el = el
 	  util.touchAction(el, 'none')
 	  this.pel = util.getRelativeElement(el)
@@ -97,12 +99,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var h
 	  this.on('start', function () {
 	    h = el.style.height
-	    var ch = el.getBoundingClientRect().height || el.clientHeight
+	    var ch = el.getBoundingClientRect().height
 	    el.style.height = ch + 'px'
 	  })
 	  this.on('end', function () {
 	    el.style.height = h
 	  })
+	  this.tx = 0
+	  this.ty = 0
 	}
 
 	/**
@@ -125,7 +129,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.events.bind('touchstart')
 	  this.events.bind('touchmove')
 	  this.events.bind('touchend')
-	  this.events.bind('touchcancel', 'ontouchend')
+	  this.docEvents.bind('touchcancel', 'ontouchend')
 	  this.docEvents.bind('touchend')
 
 	  if (!hasTouch) {
@@ -138,7 +142,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // MS IE touch events
 	  this.events.bind('PointerDown', 'ontouchstart')
 	  this.events.bind('PointerMove', 'ontouchmove')
-	  this.docEvents.bind('PointerUp', 'ontouchstart')
+	  this.docEvents.bind('PointerUp', 'ontouchend')
 	  return this
 	}
 
@@ -154,6 +158,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return this
 	}
 
+	/**
+	 * Set to horizon mode
+	 *
+	 * @public
+	 * @return {undefined}
+	 */
 	Sortable.prototype.horizon = function () {
 	  this.dir = 'horizon'
 	  return this
@@ -172,35 +182,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return this
 	}
 
+	/**
+	 * ontouchstart event handler
+	 *
+	 * @private
+	 */
 	Sortable.prototype.ontouchstart = function(e) {
-	  // ignore
+	  if (this.dragEl != null) return
 	  if (this.ignored && closest(e.target, this.ignored, this.el)) return
-	  var node = this.findMatch(e)
-	  // element to move
-	  if (node) node = util.matchAsChild(node, this.el)
-	  // not found
+	  var node = this.findDelegate(e)
 	  if (node == null) return
-	  if (node === this.disabled) return
+	  if (this.timer) clearTimeout(this.timer)
 	  var touch = util.getTouch(e)
 	  if (this._handle) e.preventDefault()
 	  this.timer = setTimeout(function () {
 	    this.dragEl = node
+	    this.dragging = true
 	    this.index = util.indexof(node)
-	    this.children = util.getChildElements(this.el)
+	    this.mouseStart = {}
+	    this.x = this.mouseStart.x = touch.clientX,
+	    this.y = this.mouseStart.y = touch.clientY
 	    var pos = util.getAbsolutePosition(node, this.pel)
 	    // place holder
 	    var holder = this.holder = node.cloneNode(false)
 	    holder.removeAttribute('id')
 	    classes(holder).add('sortable-holder')
 	    util.copy(holder.style, {
+	      borderColor: 'rgba(255,255,255,0)',
 	      backgroundColor: 'rgba(255,255,255,0)',
 	      height: pos.height + 'px',
 	      width: pos.width + 'px'
 	    })
-	    this.mouseStart = {
-	      x: touch.clientX,
-	      y: touch.clientY
-	    }
 	    classes(node).add('sortable-dragging')
 	    this.orig = util.copy(node.style, {
 	      height: pos.height + 'px',
@@ -211,48 +223,57 @@ return /******/ (function(modules) { // webpackBootstrap
 	      position: 'absolute'
 	    })
 	    this.el.insertBefore(holder, node)
-	    this.dragging = true
 	    this.animate = new Animate(this.pel, node, holder)
 	    this.emit('start')
 	  }.bind(this), 100)
 	}
 
+	/**
+	 * ontouchmove event handler
+	 *
+	 * @private
+	 */
 	Sortable.prototype.ontouchmove = function(e) {
-	  if (this.dragEl == null || this.index == null) return
+	  if (this.mouseStart == null) return
 	  if (e.changedTouches && e.changedTouches.length !== 1) return
-	  if (e.defaultPrevented) return
+	  var el = this.dragEl
 	  e.preventDefault()
 	  e.stopPropagation()
 	  var touch = util.getTouch(e)
 	  var touchDir = 0
-	  var sx = this.mouseStart.x
-	  var sy = this.mouseStart.y
-	  var d = this.dragEl
-	  var dx = touch.clientX - (this.x || sx)
-	  var dy = touch.clientY - (this.y || sy)
+	  if (this.dir === 'horizon') {
+	    var dx = touch.clientX - this.x
+	    if (dx === 0) return
+	    touchDir = dx > 0 ? 1 : 3
+	    this.tx = touch.clientX - this.mouseStart.x
+	    util.translate(el, this.tx, 0)
+	  } else {
+	    var dy = touch.clientY - this.y
+	    if (dy === 0) return
+	    touchDir = dy > 0 ? 0 : 2
+	    this.ty = touch.clientY - this.mouseStart.y
+	    util.translate(el, 0, this.ty)
+	  }
 	  this.x = touch.clientX
 	  this.y = touch.clientY
-	  if (this.dir === 'horizon') {
-	    this.tx = touch.clientX - sx
-	    util.translate(d, this.tx, 0)
-	    touchDir = dx > 0 ? 1 : 3
-	    if (dx === 0) return
-	  } else {
-	    this.ty = touch.clientY - sy
-	    util.translate(d, 0, this.ty)
-	    touchDir = dy > 0 ? 0 : 2
-	    if (dy === 0) return
-	  }
-	  if (util.getPosition(touch.clientX, touch.clientY, this.el)) {
-	    this.positionHolder(touch, touchDir)
-	  }
+	  this.positionHolder(touchDir)
 	  return false
 	}
 
+	/**
+	 * ontouchend event handler
+	 *
+	 * @private
+	 */
 	Sortable.prototype.ontouchend = function() {
 	  this.reset()
 	}
 
+	/**
+	 * Unbind all event listeners
+	 *
+	 * @public
+	 */
 	Sortable.prototype.remove =
 	Sortable.prototype.unbind = function() {
 	  this.events.unbind()
@@ -260,42 +281,71 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.off()
 	}
 
-	Sortable.prototype.findMatch = function(e){
-	  if (this._handle) return closest(e.target, this._handle, this.el)
-	  if (this.selector) {
-	    var el = closest(e.target, this.selector, this.el)
-	    return el
+	Sortable.prototype.findDelegate = function(e){
+	  var el
+	  if (this._handle) {
+	    el = closest(e.target, this._handle, this.el)
+	  } else if (this.selector) {
+	    el = closest(e.target, this.selector, this.el)
+	  } else {
+	    el = e.target
 	  }
-	  return util.matchAsChild(e.target, this.el)
+	  if (!el) return null
+	  return util.matchAsChild(el, this.el)
 	}
 
-	var positionHolder = function (e, touchDir) {
+	/**
+	 * Position the holder element and animate the overlaped element(s)
+	 *
+	 * @private
+	 * @param {Number} touchDir
+	 */
+	var positionHolder = function (touchDir) {
 	  var d = this.dragEl
 	  if (d == null) return
 	  var delta = this.delta
 	  var rect = d.getBoundingClientRect()
 	  var x = rect.left + rect.width/2
 	  var y = rect.top + rect.height/2
+	  if (!this.connected) this.emit('move', touchDir)
 	  var horizon = this.dir === 'horizon'
-	  var children = this.children
-	  for (var i = children.length - 1; i >= 0; i--) {
-	    var node = children[i]
-	    if (node === d) continue
-	    var pos = util.getPosition(x, y, node)
-	    if (!pos) continue
-	    if (horizon) {
-	      if (touchDir === 1 && pos.dx > - delta) {
-	        this.animate.animate(node, 3)
-	      } else if (touchDir === 3 && pos.dx < delta){
-	        this.animate.animate(node, 1)
-	      }
-	    } else {
-	      if (touchDir === 2 && pos.dy <= delta) {
-	        this.animate.animate(node, 0)
-	      } else if (touchDir === 0 && pos.dy >= -delta){
-	        this.animate.animate(node, 2)
-	      }
+	  var holder = this.holder
+	  var last = this.last || holder
+	  var el = last
+	  var property = touchDir < 2 ? 'nextSibling' : 'previousSibling'
+
+	  while(el) {
+	    if (el.nodeType !== 1 || el === d || el === holder) {
+	      el = el[property]
+	      continue
 	    }
+	    var r = el.getBoundingClientRect()
+	    if (horizon) {
+	      var dx = x - (r.left + r.width/2)
+	      if (touchDir === 1 && dx < - delta) break
+	      if (touchDir === 3 && dx > delta) break
+	      if (el === last) {
+	        if ((touchDir === 1 && x > r.right) || (touchDir === 3 && x < r.left)) {
+	          el = el[property]
+	          continue
+	        }
+	      }
+	      this.last = el
+	      this.animate.animate(el, (touchDir + 2)%4)
+	    } else {
+	      var dy = y - (r.top +  r.height/2)
+	      if (touchDir === 2 && dy > delta) break
+	      if (touchDir === 0 && dy < - delta) break
+	      if (el === last) {
+	        if ((touchDir === 0 && y > r.bottom) || (touchDir === 2 && y < r.top)) {
+	          el = el[property]
+	          continue
+	        }
+	      }
+	      this.last = el
+	      this.animate.animate(el, (touchDir + 2)%4)
+	    }
+	    el = el[property]
 	  }
 	}
 
@@ -314,72 +364,220 @@ return /******/ (function(modules) { // webpackBootstrap
 	    clearTimeout(this.timer)
 	    this.timer = null
 	  }
-	  if (this.dragging === false) return
-	  this.dragging = false
-	  var p = this.el
+	  // make sure called once
+	  if (this.mouseStart == null) return
+	  this.mouseStart = null
+	  if (!this.connected) this.emit('reset')
+	  var parentNode = this.el
 	  var el = this.dragEl
 	  var h = this.holder
-	  if (!h) return
-	  this.moveTo(h, function () {
-	    el.style[transform] = ''
-	    p.insertBefore(el, h)
-	    p.removeChild(h)
-	    util.copy(el.style, this.orig)
-	    classes(el).remove('sortable-dragging')
-	    if (util.indexof(el) !== this.index) {
-	      this.emit('update', el)
+	  var handled = this.handled
+	  function cb() {
+	    if (!handled) {
+	      // performance better
+	      el.style[transform] = ''
+	      el.style[transition] = ''
+	      parentNode.insertBefore(el, h)
+	      util.copy(el.style, this.orig)
+	      if (util.indexof(el) !== this.index) {
+	        this.emit('update', el)
+	      }
+	      classes(el).remove('sortable-dragging')
+	    } else {
+	      this.emit('remove', el)
 	    }
-	    delete this.index
-	    this.children = this.animate = this.holder = this.dragEl = null
-	    this.emit('end')
-	  }.bind(this))
+	    this.clean()
+	  }
+	  if (handled) return setTimeout(cb.bind(this), 500)
+	  var dir = this.getDirection()
+	  if (this.connected) {
+	    this.connectedMoveTo(el, h, dir, cb.bind(this))
+	  } else {
+	    this.moveTo(el, h, dir, cb.bind(this))
+	  }
 	}
 
-	Sortable.prototype.moveTo = function (target, cb) {
-	  var el = this.dragEl
-	  this.disabled = el
-	  var duration = 320
-	  util.transitionDuration(el, duration, 'linear')
-	  var tx = this.tx || 0
-	  var ty = this.ty || 0
-	  var dis = this.getDistance(el, target, this.animate.dir)
-	  var x = tx + dis.x
-	  var y = ty + dis.y
-	  var nomove = (dis.x ===0 && dis.y === 0)
-	  var self = this
-	  var fn = function () {
-	    el.style[transition] = ''
-	    self.disabled = null
-	    cb()
+	/**
+	 * Get the last animate direction for dragEl
+	 *
+	 * @private
+	 * @return {Number}
+	 */
+	Sortable.prototype.getDirection = function () {
+	  var dir = this.animate.dir
+	  if (dir == null) {
+	    if (this.dir === 'horizon') {
+	      dir = this.tx > 0 ? 1 : 3
+	    } else {
+	      dir = this.ty > 0 ? 2 : 0
+	    }
 	  }
+	  return dir
+	}
+
+	/**
+	 * Move to for the connected status
+	 *
+	 * @public
+	 * @param  {Element}  el
+	 * @param {Element} target
+	 * @param {Number} dir
+	 * @param  {Function}  cb
+	 * @return {undefined}
+	 */
+	Sortable.prototype.connectedMoveTo = function (el, target, dir, cb) {
+	  var duration = this.duration
+	  var parentNode = el.parentNode
+	  var prop = dir%2 === 0 ? 'height' : 'width'
+	  var d = parseInt(el.style[prop], 10)
+	  var r = parentNode.getBoundingClientRect()
+	  var s = r[prop]
+	  var border
+	  var start
+	  if (dir%2 === 0) {
+	    border = dir === 0 ? 'top' : 'bottom'
+	  } else {
+	    border = dir === 1 ? 'left' : 'right'
+	  }
+	  var tx = this.tx
+	  var ty = this.ty
+	  var to = util.getBoundingClientRect(target)[border]
+	  var from = util.getBoundingClientRect(el)[border]
+	  var dis = to - from
+	  function animate(ts) {
+	    if (!start) start = ts
+	    var p = (ts - start)/duration
+	    if (p > 1) p = 1
+	    parentNode.style[prop] = (s - d*p ) + 'px'
+	    var cur = util.getBoundingClientRect(target)[border]
+	    if (dir%2 === 0) {
+	      var y = ty + (dis*p) + cur - to
+	      util.translate(el, tx, y)
+	    } else {
+	      var x = tx + (dis*p) + cur - to
+	      util.translate(el, x, ty)
+	    }
+	    if (p === 1) return cb()
+	    raf(animate)
+	  }
+	  raf(animate)
+	}
+
+	/**
+	 * Move el to target with move direction and callback
+	 *
+	 * @private
+	 * @param  {Element}  el
+	 * @param {Element} target
+	 * @param {Number} dir
+	 * @param  {Function}  cb
+	 */
+	Sortable.prototype.moveTo = function (el, target, dir, cb) {
+	  var duration = this.duration
+	  util.transitionDuration(el, duration, 'ease')
+	  var dis = util.getDistance(el, target, dir)
+	  var x = (this.tx || 0) + dis.x
+	  var y = (this.ty || 0) + dis.y
+	  var nomove = (dis.x ==0 && dis.y === 0)
 	  if (nomove) {
-	    setTimeout(fn, duration)
+	    setTimeout(cb, duration)
 	  } else {
 	    var end = function () {
 	      event.unbind(el, transitionend, end)
-	      fn()
+	      cb()
 	    }
 	    event.bind(el, transitionend, end)
 	    util.translate(el, x, y)
 	  }
 	}
 
-	Sortable.prototype.getDistance = function (from, to, dir) {
-	  var x
-	  var y
-	  var r = from.getBoundingClientRect()
-	  var tr = to.getBoundingClientRect()
-	  var prop
-	  if (dir%2 === 0) {
-	    x = 0
-	    prop = dir === 0 ? 'top' : 'bottom'
-	    y = tr[prop] - r[prop]
+	/**
+	 * Connect to another sortable
+	 *
+	 * @public
+	 * @param {Sortable} sortable
+	 */
+	Sortable.prototype.connect = function (sortable) {
+	  var self = this
+	  var dir = 0
+	  var parentNode = this.el
+	  var rect = parentNode.getBoundingClientRect()
+	  var r = sortable.el.getBoundingClientRect()
+	  if (this.dir === 'horizon') {
+	    dir = rect.left > r.left ? 1 : 3
 	  } else {
-	    y = 0
-	    prop = dir === 1 ? 'left' : 'right'
-	    x = tr[prop] - r[prop]
+	    dir = rect.top > r.top ? 0 : 2
 	  }
-	  return {x: x, y: y}
+	  var h
+	  var padding
+	  this.on('start', function () {
+	    self.connected = false
+	  })
+	  sortable.on('start', function () {
+	    self.dragging = true
+	    self.connected = true
+	    self.orig = sortable.orig
+	    self.dragEl = sortable.dragEl
+	    self.mouseStart = sortable.mouseStart
+	    var holder = self.holder = sortable.holder.cloneNode(true)
+	    h = holder.style.height
+	    padding = holder.style.padding
+	    holder.style.height = '0px'
+	    holder.style.padding = '0px'
+	    holder.style[transition] = 'all 0.2s ease'
+	    if (dir < 2) {
+	      var first = parentNode.firstChild
+	      if (first) {
+	        parentNode.insertBefore(holder, first)
+	      } else {
+	        parentNode.appendChild(holder)
+	      }
+	    } else {
+	      parentNode.appendChild(holder)
+	    }
+	    setTimeout(function () {
+	      self.holder.style.height = h
+	      self.holder.style.padding = padding
+	    })
+	    function end() {
+	      event.unbind(holder, transitionend, end)
+	      holder.style[transition] = ''
+	      h = ''
+	    }
+	    event.bind(holder, transitionend, end)
+	    self.animate = new Animate(self.pel, self.dragEl, holder)
+	  })
+	  sortable.on('move', function (dir) {
+	    self.tx = sortable.tx
+	    self.ty = sortable.ty
+	    positionHolder.call(self, dir)
+	  })
+
+	  sortable.on('reset', function () {
+	    var rect = sortable.dragEl.getBoundingClientRect()
+	    var inside = util.intersect(parentNode, rect)
+	    if (inside) {
+	      sortable.handled = true
+	      self.reset()
+	    } else {
+	      self.clean()
+	    }
+	  })
+	}
+
+	/**
+	 * Clean the element and status
+	 *
+	 * @private
+	 */
+	Sortable.prototype.clean = function () {
+	  this.el.removeChild(this.holder)
+	  this.last = this.animate = this.holder = this.dragEl = null
+	  this.dragging = false
+	  this.handled = false
+	  this.mouseStart = null
+	  delete this.index
+	  this.emit('end')
 	}
 
 
@@ -1277,29 +1475,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	/**
-	 * Get position by clientX clientY in element
-	 * 1 2 3 4 => tl tr bl br
-	 *
-	 * @param {Number} x
-	 * @param {Number} y
-	 * @param  {Element}  el
-	 * @return {Boolean}
-	 * @api public
-	 */
-	exports.getPosition = function (x, y, el) {
-	  var rect = el.getBoundingClientRect()
-	  var w = rect.width || el.offsetWidth
-	  var h = rect.height || el.offsetHeight
-	  if (x > rect.left && x < rect.left + w && y > rect.top && y < rect.top + h) {
-	    return {
-	      dx: x - (rect.left + w/2),
-	      dy: y - (rect.top + h/2)
-	    }
-	  }
-	  return false
-	}
-
-	/**
 	 * Get absolute left top width height
 	 *
 	 * @param  {Element}  el
@@ -1348,14 +1523,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @api public
 	 */
 	exports.getRelativeElement = function (el) {
-	  do {
-	    el = el.parentNode
+	  while(el) {
 	    if (el === doc) return el
 	    var p = styles(el, 'position')
 	    if (p === 'absolute' || p === 'fixed' || p === 'relative') {
 	      return el
 	    }
-	  } while(el)
+	    el = el.parentNode
+	  }
 	}
 
 	/**
@@ -1401,7 +1576,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.indexof = function (el) {
 	  var children = el.parentNode.children
 	  for (var i = children.length - 1; i >= 0; i--) {
-	    var node = children[i];
+	    var node = children[i]
 	    if (node === el) {
 	      return i
 	    }
@@ -1424,6 +1599,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	}
 
+	exports.getDistance = function (from, to, dir) {
+	  var x
+	  var y
+	  var r = from.getBoundingClientRect()
+	  var tr = to.getBoundingClientRect()
+	  var prop
+	  if (dir%2 === 0) {
+	    x = 0
+	    prop = dir === 0 ? 'top' : 'bottom'
+	    y = tr[prop] - r[prop]
+	  } else {
+	    y = 0
+	    prop = dir === 1 ? 'left' : 'right'
+	    x = tr[prop] - r[prop]
+	  }
+	  return {x: x, y: y}
+	}
+
+	exports.getBoundingClientRect = function (el) {
+	  var r = el.getBoundingClientRect()
+	  return {
+	    left: r.left,
+	    top: r.top,
+	    right: r.left + r.width,
+	    bottom: r.top + r.height
+	  }
+	}
+
 	/**
 	 * Set transition duration to `ms`
 	 *
@@ -1433,7 +1636,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	var prefix = transition.replace(/transition/i, '').toLowerCase()
 	exports.transitionDuration = function(el, ms, ease){
-	  var s = el.style;
+	  var s = el.style
 	  ease = ease || 'ease-in-out'
 	  if (!prefix) {
 	    s[transition] = ms + 'ms transform ' + ease
@@ -1450,12 +1653,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	exports.getTouch = function(e){
 	  // "mouse" and "Pointer" events just use the event object itself
-	  var touch = e;
+	  var touch = e
 	  if (e.changedTouches && e.changedTouches.length > 0) {
 	    // W3C "touch" events use the `changedTouches` array
-	    touch = e.changedTouches[0];
+	    touch = e.changedTouches[0]
 	  }
-	  return touch;
+	  return touch
 	}
 
 	/**
@@ -1464,22 +1667,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @api private
 	 */
 	exports.touchAction = function(el, value){
-	  var s = el.style;
+	  var s = el.style
 	  if (touchAction) {
-	    s[touchAction] = value;
+	    s[touchAction] = value
 	  }
 	}
 
-	exports.getChildElements = function (el) {
-	  var nodes = el.childNodes
-	  var arr = []
-	  for (var i = 0, l = nodes.length; i < l; i++) {
-	    var n = nodes[i]
-	    if (n.nodeType === 1) {
-	      arr.push(n)
-	    }
-	  }
-	  return arr
+	/**
+	 * Check if two element intersect
+	 *
+	 * @public
+	 * @param  {Element}  node
+	 * @param  {Object}  b
+	 * @return {Boolean}
+	 */
+	exports.intersect = function (node, b) {
+	  var a = node.getBoundingClientRect()
+	  var al = a.left
+	  var ar = a.left+a.width
+	  var bl = b.left
+	  var br = b.left+b.width
+
+	  var at = a.top
+	  var ab = a.top+a.height
+	  var bt = b.top
+	  var bb = b.top+b.height
+
+	  if(bl>ar || br<al){return false;}//overlap not possible
+	  if(bt>ab || bb<at){return false;}//overlap not possible
+
+	  if(bl>al && bl<ar){return true;}
+	  if(br>al && br<ar){return true;}
+
+	  if(bt>at && bt<ab){return true;}
+	  if(bb>at && bb<ab){return true;}
+
+	  return false
 	}
 
 
@@ -1551,11 +1774,11 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	var styles = [
-	  'transition',
 	  'webkitTransition',
 	  'MozTransition',
 	  'OTransition',
-	  'msTransition'
+	  'msTransition',
+	  'transition'
 	]
 
 	var el = document.createElement('p')
@@ -1610,11 +1833,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	var uid = __webpack_require__(20)
 
 	function Animate(pel, dragEl, holder) {
-	  var d = this.dragEl = dragEl
-	  var r = d.getBoundingClientRect()
+	  this.dragEl = dragEl
 	  this.holder = holder
-	  this.dx = r.width || d.offsetWidth
-	  this.dy = r.height || d.offsetHeight
+	  this.width = parseInt(holder.style.width, 10)
+	  this.height = parseInt(holder.style.height, 10)
 	  this.pel = pel
 	  this.animates = {}
 	}
@@ -1630,8 +1852,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	Animate.prototype.animate = function (el, dir) {
 	  if (!el.id) el.id = uid(7)
 	  var o = this.animates[el.id] || {}
-	  if (o.dir === dir) return
 	  this.dir = dir
+	  if (o.dir === dir) return
 	  o.dir = dir
 	  // var holder = this.holder
 	  if (o.end) {
@@ -1641,48 +1863,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.transit(el, 0, 0, dir)
 	    } else {
 	      o.transform = true
-	      var props = this.getTransformProperty(dir)
+	      var props = this.getTransformProperty(dir, o.width, o.height)
 	      this.transit(el, props.x, props.y, dir)
 	    }
 	  } else {
 	    o.transform = true
-	    util.transitionDuration(el, 280)
+	    util.transitionDuration(el, 320)
 	    this.animates[el.id] = o
 	    this.start(o, el, dir)
 	  }
 	}
 
-	Animate.prototype.getTransformProperty = function (dir) {
-	  var x
-	  var y
+	Animate.prototype.getTransformProperty = function (dir, w, h) {
+	  var o = {x: 0, y: 0}
 	  if (dir%2 === 0) {
-	    y = dir > 1 ? - this.dy : this.dy
+	    o.y = dir > 1 ? - h : h
 	  } else {
-	    x = dir > 1 ? - this.dx : this.dx
+	    o.x = dir > 1 ? - w : w
 	  }
-	  return {
-	    x: x,
-	    y: y
-	  }
+	  return o
 	}
 
 	Animate.prototype.start = function (o, el, dir) {
 	  var holder = this.holder
-	  var r = holder.getBoundingClientRect()
-	  var h = r.height || holder.offsetHeight
-	  var w = r.width || holder.offsetWidth
-	  var s = holder.style
-	  var orig = o.orig = util.makeAbsolute(el, this.pel)
-	  var isAbsolute = orig.position === 'absolute'
+	  var rect = holder.getBoundingClientRect()
+	  var r = el.getBoundingClientRect()
+	  var w = o.width = r.width
+	  var h = o.height = r.height
+	  o.orig = util.makeAbsolute(el, this.pel)
 	  // bigger the holder
-	  if (!isAbsolute) {
-	    if (dir%2 === 0) {
-	      s.height = (h + this.dy) + 'px'
-	    } else {
-	      s.width = (w + this.dx) + 'px'
-	    }
+	  if (dir%2 === 0) {
+	    holder.style.height = (rect.height + h) + 'px'
+	  } else {
+	    holder.style.width = (rect.width + w) + 'px'
 	  }
-	  var props = this.getTransformProperty(dir)
+	  var props = this.getTransformProperty(dir, w, h)
 	  // test if transition begin
 	  o.end = this.transit(el, props.x, props.y, dir)
 	}
@@ -1690,14 +1905,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	Animate.prototype.transit = function (el, x, y, dir) {
 	  var holder = this.holder
 	  var s = holder.style
-	  var p = el.parentNode
 	  var self = this
 	  var end = function () {
 	    event.unbind(el, transitionend, end);
 	    var o = self.animates[el.id]
 	    if (!o) return
 	    var orig = o.orig
-	    self.animates[el.id] = null
 	    // reset el
 	    el.style[transition] = ''
 	    el.style[transform] = ''
@@ -1709,20 +1922,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        el.parentNode.insertBefore(holder, el)
 	      }
 	    }
-	    var isAbsolute = orig.position === 'absolute'
-	    if (!isAbsolute) {
-	      util.copy(el.style, orig)
-	    }
+	    util.copy(el.style, orig)
 	    if (removed) return
 	    // reset holder
 	    var rect = holder.getBoundingClientRect()
 	    if (dir%2 === 0) {
-	      var dy = isAbsolute ? 0 : self.dy
-	      s.height = ((rect.height || holder.offsetHeight) - dy) + 'px'
+	      var h = Math.max(self.height, rect.height - o.height)
+	      s.height = h + 'px'
 	    } else {
-	      var dx = isAbsolute ? 0 : self.dx
-	      s.width = ((rect.width || holder.offsetWidth) - dx) + 'px'
+	      var w = Math.max(self.width, rect.width - o.width)
+	      s.width = w + 'px'
 	    }
+	    self.animates[el.id] = null
 	  }
 	  event.bind(el, transitionend, end)
 	  util.translate(el, x, y)
@@ -1783,6 +1994,46 @@ return /******/ (function(modules) { // webpackBootstrap
 	  len = len || 7;
 	  return Math.random().toString(35).substr(2, len);
 	}
+
+
+/***/ },
+/* 21 */
+/***/ function(module, exports) {
+
+	/**
+	 * Expose `requestAnimationFrame()`.
+	 */
+
+	exports = module.exports = window.requestAnimationFrame
+	  || window.webkitRequestAnimationFrame
+	  || window.mozRequestAnimationFrame
+	  || fallback;
+
+	/**
+	 * Fallback implementation.
+	 */
+
+	var prev = new Date().getTime();
+	function fallback(fn) {
+	  var curr = new Date().getTime();
+	  var ms = Math.max(0, 16 - (curr - prev));
+	  var req = setTimeout(fn, ms);
+	  prev = curr;
+	  return req;
+	}
+
+	/**
+	 * Cancel.
+	 */
+
+	var cancel = window.cancelAnimationFrame
+	  || window.webkitCancelAnimationFrame
+	  || window.mozCancelAnimationFrame
+	  || window.clearTimeout;
+
+	exports.cancel = function(id){
+	  cancel.call(window, id);
+	};
 
 
 /***/ }
