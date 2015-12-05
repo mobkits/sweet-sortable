@@ -27,7 +27,8 @@
     "events": "component-events",
     "matches-selector": "component-matches-selector",
     "delay": "delay-component",
-    "event": "component-event"
+    "event": "component-event",
+    "raf": "component-raf"
   },
   "dependencies": {
     "component-classes": "^1.2.4",
@@ -37,6 +38,7 @@
     "component-events": "^1.0.9",
     "component-indexof": "0.0.3",
     "component-matches-selector": "^0.1.5",
+    "component-raf": "^1.2.0",
     "computed-style": "^0.3.0",
     "has-translate3d": "0.0.3",
     "per-frame": "^3.0.1",
