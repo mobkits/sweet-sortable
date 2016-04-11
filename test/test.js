@@ -313,6 +313,9 @@ describe('.remove()', function () {
     append(2)
     s.bind('li')
     s.unbind()
+    s.on('starting', function () {
+      fired = true
+    })
     s.on('start', function () {
       fired = true
     })
