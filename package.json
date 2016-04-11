@@ -1,6 +1,6 @@
 {
   "name": "sweet-sortable",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Make your element sortable with sweet animation of high performance.",
   "main": "lib/index.js",
   "scripts": {
@@ -49,7 +49,7 @@
     "uid": "0.0.2"
   },
   "devDependencies": {
-    "coveralls": "^2.11.4",
+    "coveralls": "^2.11.9",
     "istanbul": "^0.4.0",
     "istanbul-instrumenter-loader": "^0.2.0",
     "karma": "^0.13.15",

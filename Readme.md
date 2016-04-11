@@ -64,6 +64,7 @@ sortable.bind('li');
 #### events
 
   - `update`, emitted with change element when sort changes happen.
+  - `starting`, emitted just before dragging start
   - `start`(e), emitted when the drag starts.
   - `end`(e), emitted at the end of D&D
 
@@ -72,6 +73,7 @@ sortable.bind('li');
 Initialize Sortable with `el`.
 
 `options.delta` is the center distance number in px to config when the animation take place,
+`options.delay` set the delay for dragging start and touch move, default `100` (need this to avoid some wired problem)
 
 increase the value if you want animation happens earlier.  default is 10
 
