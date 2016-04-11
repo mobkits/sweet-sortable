@@ -115,6 +115,18 @@ describe('.bind()', function () {
     })
   })
 
+  it('should bind to element of selector with custom delay', function () {
+    append(5)
+    var s = Sortable(ul, {delay: 200})
+    s.bind('li')
+    var li = ul.querySelector('li')
+    var t = Touch(li)
+    t.start()
+    return t.wait(110).then(function () {
+      assert.equal(s.dragging, false)
+    })
+  })
+
   it('should not bind to element not match', function () {
     append(5)
     var div = document.createElement('div')
