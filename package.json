@@ -24,10 +24,8 @@
     "classes": "component-classes",
     "closest": "component-closest",
     "emitter": "component-emitter",
-    "events": "component-events",
     "matches-selector": "component-matches-selector",
     "delay": "delay-component",
-    "event": "component-event",
     "raf": "component-raf"
   },
   "dependencies": {
