@@ -112,7 +112,7 @@
 	var Animate = __webpack_require__(/*! ./animate */ 19)
 	var transition = __webpack_require__(/*! transition-property */ 17)
 	var transitionend = __webpack_require__(/*! transitionend-property */ 20)
-	var raf = __webpack_require__(/*! raf */ 22)
+	var raf = __webpack_require__(/*! raf */ 24)
 	
 	var hasTouch = 'ontouchend' in window
 	
@@ -134,6 +134,7 @@
 	  opts = opts || {}
 	  this.delta = opts.delta == null ? 15 : opts.delta
 	  this.duration = opts.duration || 330
+	  this.delay = opts.delay || 100
 	  this.el = el
 	  util.touchAction(el, 'none')
 	  this.pel = util.getRelativeElement(el)
@@ -238,6 +239,9 @@
 	  if (this.timer) clearTimeout(this.timer)
 	  var touch = util.getTouch(e)
 	  if (this._handle) e.preventDefault()
+	  this.dragEl = node
+	  this.dragging = false
+	  this.emit('starting')
 	  this.timer = setTimeout(function () {
 	    this.dragEl = node
 	    this.dragging = true
@@ -268,7 +272,7 @@
 	    this.el.insertBefore(holder, node)
 	    this.animate = new Animate(this.pel, node, holder)
 	    this.emit('start')
-	  }.bind(this), 100)
+	  }.bind(this), this.delay)
 	}
 	
 	/**
@@ -416,6 +420,7 @@
 	  var h = this.holder
 	  var handled = this.handled
 	  function cb() {
+	    var update
 	    if (!handled) {
 	      // performance better
 	      el.style[transform] = ''
@@ -423,13 +428,14 @@
 	      parentNode.insertBefore(el, h)
 	      util.copy(el.style, this.orig)
 	      if (util.indexof(el) !== this.index) {
-	        this.emit('update', el)
+	        update = true
 	      }
 	      classes(el).remove('sortable-dragging')
 	    } else {
 	      this.emit('remove', el)
 	    }
 	    this.clean()
+	    if (update) this.emit('update', el)
 	  }
 	  if (handled) return setTimeout(cb.bind(this), 500)
 	  var dir = this.getDirection()
@@ -805,7 +811,11 @@
 	 * Module dependencies.
 	 */
 	
-	var index = __webpack_require__(/*! indexof */ 4);
+	try {
+	  var index = __webpack_require__(/*! indexof */ 4);
+	} catch (err) {
+	  var index = __webpack_require__(/*! component-indexof */ 4);
+	}
 	
 	/**
 	 * Whitespace regexp.
@@ -1017,8 +1027,17 @@
 	 * Module dependencies.
 	 */
 	
-	var events = __webpack_require__(/*! event */ 6);
-	var delegate = __webpack_require__(/*! delegate */ 7);
+	try {
+	  var events = __webpack_require__(/*! event */ 6);
+	} catch(err) {
+	  var events = __webpack_require__(/*! component-event */ 6);
+	}
+	
+	try {
+	  var delegate = __webpack_require__(/*! delegate */ 7);
+	} catch(err) {
+	  var delegate = __webpack_require__(/*! component-delegate */ 7);
+	}
 	
 	/**
 	 * Expose `Events`.
@@ -1235,17 +1254,26 @@
 
 /***/ },
 /* 7 */
-/*!**********************************************************!*\
-  !*** ./~/component-events/~/component-delegate/index.js ***!
-  \**********************************************************/
+/*!***************************************!*\
+  !*** ./~/component-delegate/index.js ***!
+  \***************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * Module dependencies.
 	 */
 	
-	var closest = __webpack_require__(/*! closest */ 8)
-	  , event = __webpack_require__(/*! event */ 6);
+	try {
+	  var closest = __webpack_require__(/*! closest */ 8);
+	} catch(err) {
+	  var closest = __webpack_require__(/*! component-closest */ 8);
+	}
+	
+	try {
+	  var event = __webpack_require__(/*! event */ 6);
+	} catch(err) {
+	  var event = __webpack_require__(/*! component-event */ 6);
+	}
 	
 	/**
 	 * Delegate event `type` to `selector`
@@ -1295,7 +1323,11 @@
 	 * Module Dependencies
 	 */
 	
-	var matches = __webpack_require__(/*! matches-selector */ 9)
+	try {
+	  var matches = __webpack_require__(/*! matches-selector */ 9)
+	} catch (err) {
+	  var matches = __webpack_require__(/*! component-matches-selector */ 9)
+	}
 	
 	/**
 	 * Export `closest`
@@ -1336,7 +1368,11 @@
 	 * Module dependencies.
 	 */
 	
-	var query = __webpack_require__(/*! query */ 10);
+	try {
+	  var query = __webpack_require__(/*! query */ 10);
+	} catch (err) {
+	  var query = __webpack_require__(/*! component-query */ 10);
+	}
 	
 	/**
 	 * Element prototype.
@@ -1382,9 +1418,9 @@
 
 /***/ },
 /* 10 */
-/*!*****************************************************************!*\
-  !*** ./~/component-matches-selector/~/component-query/index.js ***!
-  \*****************************************************************/
+/*!************************************!*\
+  !*** ./~/component-query/index.js ***!
+  \************************************/
 /***/ function(module, exports) {
 
 	function one(selector, el) {
@@ -2100,7 +2136,9 @@
 
 
 /***/ },
-/* 22 */
+/* 22 */,
+/* 23 */,
+/* 24 */
 /*!**********************************!*\
   !*** ./~/component-raf/index.js ***!
   \**********************************/
