@@ -1,4 +1,7 @@
 # 0.3.5
+* emit `starting` event on drag start
+* update dependencies
+
 
 # 0.3.0
 * add connect feature
