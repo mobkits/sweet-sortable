@@ -1,5 +1,5 @@
 dev:
-	@webpack example/example.js example/bundle.js -w -d
+	@./node_modules/.bin/webpack example/example.js example/bundle.js -w -d
 
 umd:
 	@webpack lib/index.js build/sortable.js --output-library sortable --output-library-target umd
